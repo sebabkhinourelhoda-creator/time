@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Card } from "@/components/ui/card";
+import { BodyComponent } from 'reactjs-human-body';
+import { Button } from "@/components/ui/button";
 
 type BodyPart = {
   id: string;
@@ -23,6 +25,16 @@ const bodyParts: BodyPart[] = [
 
 const BodyMap = () => {
   const [selectedPart, setSelectedPart] = useState<BodyPart | null>(null);
+  const [bodyModel, setBodyModel] = useState<'male' | 'female'>('male');
+  const [highlightedParts, setHighlightedParts] = useState<any>(null);
+
+  const handleBodyPartClick = (id: string) => {
+    const part = bodyParts.find(p => p.id.toLowerCase() === id.toLowerCase());
+    if (part) {
+      setSelectedPart(part);
+      setHighlightedParts({ [id]: { selected: true } });
+    }
+  };
 
   return (
     <div className="min-h-screen">
@@ -40,47 +52,37 @@ const BodyMap = () => {
           <div className="grid lg:grid-cols-2 gap-8 items-start">
             {/* Body Diagram */}
             <div className="relative bg-card rounded-2xl shadow-xl p-8 min-h-[600px]">
-              <div className="relative w-full h-[700px] mx-auto max-w-md">
-                {/* Simple body outline */}
-                <svg viewBox="0 0 200 400" className="w-full h-full">
-                  {/* Head */}
-                  <circle cx="100" cy="30" r="25" fill="hsl(var(--secondary))" opacity="0.2" className="cursor-pointer hover:opacity-40 transition-opacity" onClick={() => setSelectedPart(bodyParts[0])} />
-                  
-                  {/* Neck */}
-                  <rect x="85" y="55" width="30" height="20" fill="hsl(var(--secondary))" opacity="0.2" className="cursor-pointer hover:opacity-40 transition-opacity" onClick={() => setSelectedPart(bodyParts[1])} />
-                  
-                  {/* Chest */}
-                  <ellipse cx="100" cy="110" rx="50" ry="40" fill="hsl(var(--primary))" opacity="0.2" className="cursor-pointer hover:opacity-40 transition-opacity" onClick={() => setSelectedPart(bodyParts[2])} />
-                  
-                  {/* Abdomen */}
-                  <rect x="60" y="150" width="80" height="70" rx="10" fill="hsl(var(--accent))" opacity="0.2" className="cursor-pointer hover:opacity-40 transition-opacity" onClick={() => setSelectedPart(bodyParts[4])} />
-                  
-                  {/* Pelvis */}
-                  <ellipse cx="100" cy="250" rx="40" ry="30" fill="hsl(var(--secondary))" opacity="0.2" className="cursor-pointer hover:opacity-40 transition-opacity" onClick={() => setSelectedPart(bodyParts[5])} />
-                  
-                  {/* Legs */}
-                  <rect x="70" y="280" width="25" height="110" rx="5" fill="hsl(var(--primary))" opacity="0.2" className="cursor-pointer hover:opacity-40 transition-opacity" onClick={() => setSelectedPart(bodyParts[6])} />
-                  <rect x="105" y="280" width="25" height="110" rx="5" fill="hsl(var(--primary))" opacity="0.2" className="cursor-pointer hover:opacity-40 transition-opacity" onClick={() => setSelectedPart(bodyParts[6])} />
-                  
-                  {/* Arms */}
-                  <rect x="30" y="90" width="20" height="90" rx="5" fill="hsl(var(--muted))" opacity="0.15" />
-                  <rect x="150" y="90" width="20" height="90" rx="5" fill="hsl(var(--muted))" opacity="0.15" />
-                </svg>
-
-                {/* Clickable buttons */}
-                {bodyParts.map((part) => (
-                  <button
-                    key={part.id}
-                    onClick={() => setSelectedPart(part)}
-                    className={`absolute ${part.position} px-4 py-2 rounded-full text-xs font-semibold transition-all transform hover:scale-110 ${
-                      selectedPart?.id === part.id
-                        ? "bg-secondary text-secondary-foreground shadow-lg"
-                        : "bg-primary text-primary-foreground hover:bg-primary/90"
-                    }`}
+              <div className="flex flex-col items-center gap-4 mb-4">
+                <div className="flex gap-2">
+                  <Button
+                    variant={bodyModel === 'male' ? 'secondary' : 'outline'}
+                    onClick={() => setBodyModel('male')}
+                    className={bodyModel === 'male' ? 'bg-blue-500 text-white hover:bg-blue-600' : ''}
                   >
-                    {part.name}
-                  </button>
-                ))}
+                    Male Model
+                  </Button>
+                  <Button
+                    variant={bodyModel === 'female' ? 'secondary' : 'outline'}
+                    onClick={() => setBodyModel('female')}
+                    className={bodyModel === 'female' ? 'bg-pink-500 text-white hover:bg-pink-600' : ''}
+                  >
+                    Female Model
+                  </Button>
+                </div>
+              </div>
+              <div className="relative w-full mx-auto max-w-md" style={{ height: '600px' }}>
+                <BodyComponent
+                  partsInput={highlightedParts}
+                  bodyModel={bodyModel}
+                  onClick={handleBodyPartClick}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    '--selected-color': bodyModel === 'male' ? '#3b82f6' : '#ec4899', // Blue for male, Pink for female
+                    '--hover-color': bodyModel === 'male' ? '#60a5fa' : '#f472b6', // Lighter blue for male hover, lighter pink for female hover
+                    '--base-color': bodyModel === 'male' ? '#bfdbfe' : '#fbcfe8', // Very light blue/pink for base color
+                  } as any}
+                />
               </div>
             </div>
 
