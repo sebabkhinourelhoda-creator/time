@@ -297,10 +297,7 @@ export default function DashboardPage() {
                 <SearchIcon size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
                 <Input className="pl-9 w-[200px] bg-card/50" placeholder="Search videos..." />
               </div>
-              <Button className="gap-2">
-                <PlusCircleIcon size={18} />
-                Upload Video
-              </Button>
+      
             </div>
           </div>
 
@@ -392,10 +389,6 @@ export default function DashboardPage() {
                 </div>
                 <Label className="cursor-pointer">
                   <Input type="file" className="hidden" onChange={handleFileUpload} />
-                  <Button className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary relative group overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-r from-secondary/0 via-secondary/30 to-secondary/0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <span className="relative">Upload Document</span>
-                  </Button>
                 </Label>
               </CardHeader>
               <CardContent>
