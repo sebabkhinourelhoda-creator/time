@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -9,6 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
+import { fetchDocuments, Document } from '@/lib/documents';
+import { fetchVideos, Video } from '@/lib/videos';
 import {
   FileTextIcon,
   DownloadIcon,
@@ -44,77 +46,46 @@ import {
 import { DashboardSidebar } from '@/components/DashboardSidebar';
 import { NavBar } from '@/components/NavBar';
 
-// Mock data - replace with actual data from your backend
-const mockDocuments = [
-  { id: 1, title: 'Cancer Research 2025', rating: 8.5, downloads: 120 },
-  { id: 2, title: 'Prevention Guidelines', rating: 9.0, downloads: 200 },
-  { id: 3, title: 'Healthcare Innovation Report', rating: 8.8, downloads: 150 },
-  { id: 4, title: 'Medical Technology Trends', rating: 9.2, downloads: 180 },
-  { id: 5, title: 'Patient Care Best Practices', rating: 8.7, downloads: 165 },
-];
-
-const mockVideos = [
-  { 
-    id: 1, 
-    title: 'Understanding DNA and Genetic Factors in Health',
-    description: 'A comprehensive guide to understanding how DNA affects our health and well-being.',
-    thumbnail: 'https://images.unsplash.com/photo-1518152006812-edab29b069ac?auto=format&fit=crop&w=400',
-    duration: '12:45',
-    views: 1500,
-    rating: 9.2,
-    instructor: 'Dr. Sarah Johnson',
-    category: 'Genetics'
-  },
-  { 
-    id: 2, 
-    title: 'Cancer Prevention: Latest Research and Guidelines',
-    description: 'Learn about the most recent developments in cancer prevention strategies.',
-    thumbnail: 'https://images.unsplash.com/photo-1579165466741-7f35e4755660?auto=format&fit=crop&w=400',
-    duration: '15:20',
-    views: 2000,
-    rating: 8.8,
-    instructor: 'Dr. Michael Chen',
-    category: 'Oncology'
-  },
-  { 
-    id: 3, 
-    title: 'Nutrition and Its Impact on Health',
-    description: 'Explore the relationship between nutrition and long-term health outcomes.',
-    thumbnail: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=400',
-    duration: '18:30',
-    views: 1800,
-    rating: 9.5,
-    instructor: 'Dr. Emily Martinez',
-    category: 'Nutrition'
-  },
-  { 
-    id: 4, 
-    title: 'Mental Health: Understanding and Care',
-    description: 'A detailed look at mental health awareness and treatment approaches.',
-    thumbnail: 'https://images.unsplash.com/photo-1493836512294-502baa1986e2?auto=format&fit=crop&w=400',
-    duration: '20:15',
-    views: 2200,
-    rating: 9.3,
-    instructor: 'Dr. James Wilson',
-    category: 'Mental Health'
-  },
-  { 
-    id: 5, 
-    title: 'Exercise Science and Physical Well-being',
-    description: 'Understanding the science behind exercise and its health benefits.',
-    thumbnail: 'https://images.unsplash.com/photo-1434682881908-b43d0467b798?auto=format&fit=crop&w=400',
-    duration: '16:40',
-    views: 1650,
-    rating: 9.0,
-    instructor: 'Dr. Lisa Thompson',
-    category: 'Physical Health'
-  }
-];
-
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user, updateProfile, logout } = useAuth();
   const [newAvatar, setNewAvatar] = useState<File | null>(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [videos, setVideos] = useState<Video[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
+
+  // Load dynamic data on component mount
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Fetch documents with verified status
+        const documentsData = await fetchDocuments({ 
+          status: 'verified',
+          showAll: true 
+        });
+        
+        // Fetch videos with approved status  
+        const videosData = await fetchVideos(undefined, 'verified');
+        
+        setDocuments(documentsData || []);
+        setVideos(videosData || []);
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load dashboard data. Please try again.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, [toast]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -140,9 +111,6 @@ export default function DashboardPage() {
       });
     }
   };
-
-  const { toast } = useToast();
-  const { updateProfile, logout } = useAuth();
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -225,8 +193,11 @@ export default function DashboardPage() {
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
-                    data={mockDocuments}
-                    dataKey="downloads"
+                    data={documents.map(doc => ({
+                      title: doc.title,
+                      value: 1 // Since we don't have download counts, use 1 for each document
+                    }))}
+                    dataKey="value"
                     nameKey="title"
                     cx="50%"
                     cy="50%"
@@ -234,7 +205,7 @@ export default function DashboardPage() {
                     fill="#8884d8"
                     label={(entry) => entry.title.split(' ')[0]}
                   >
-                    {mockDocuments.map((_, index) => (
+                    {documents.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={`hsl(${index * 45}, 70%, 50%)`} />
                     ))}
                   </Pie>
@@ -254,14 +225,18 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent className="pt-4">
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={mockDocuments}>
+                <BarChart data={documents.map((doc, index) => ({
+                  title: doc.title.substring(0, 15) + (doc.title.length > 15 ? '...' : ''),
+                  documents: 1,
+                  year: doc.year || new Date().getFullYear()
+                }))}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="title" />
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="rating" fill="hsl(var(--primary))" name="Rating" />
-                  <Bar dataKey="downloads" fill="hsl(var(--secondary))" name="Downloads" />
+                  <Bar dataKey="documents" fill="hsl(var(--primary))" name="Documents" />
+                  <Bar dataKey="year" fill="hsl(var(--secondary))" name="Year" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -278,18 +253,32 @@ export default function DashboardPage() {
               <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
                 <div className="p-4 rounded-lg bg-primary/5 border border-primary/10">
                   <div className="text-sm text-muted-foreground">Total Documents</div>
-                  <div className="text-3xl font-bold text-primary mt-1">{mockDocuments.length}</div>
-                </div>
-                <div className="p-4 rounded-lg bg-primary/5 border border-primary/10">
-                  <div className="text-sm text-muted-foreground">Total Downloads</div>
                   <div className="text-3xl font-bold text-primary mt-1">
-                    {mockDocuments.reduce((acc, doc) => acc + doc.downloads, 0)}
+                    {isLoading ? (
+                      <div className="h-8 w-12 bg-muted animate-pulse rounded" />
+                    ) : (
+                      documents.length
+                    )}
                   </div>
                 </div>
                 <div className="p-4 rounded-lg bg-primary/5 border border-primary/10">
-                  <div className="text-sm text-muted-foreground">Average Rating</div>
+                  <div className="text-sm text-muted-foreground">Total Videos</div>
                   <div className="text-3xl font-bold text-primary mt-1">
-                    {(mockDocuments.reduce((acc, doc) => acc + doc.rating, 0) / mockDocuments.length).toFixed(1)}
+                    {isLoading ? (
+                      <div className="h-8 w-12 bg-muted animate-pulse rounded" />
+                    ) : (
+                      videos.length
+                    )}
+                  </div>
+                </div>
+                <div className="p-4 rounded-lg bg-primary/5 border border-primary/10">
+                  <div className="text-sm text-muted-foreground">Content Status</div>
+                  <div className="text-3xl font-bold text-primary mt-1">
+                    {isLoading ? (
+                      <div className="h-8 w-16 bg-muted animate-pulse rounded" />
+                    ) : (
+                      'Active'
+                    )}
                   </div>
                 </div>
               </div>
@@ -316,51 +305,72 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {mockVideos.map((video) => (
-              <Card key={video.id} className="border-2 hover:border-primary/50 transition-colors bg-background/80 backdrop-blur-sm overflow-hidden group">
-                <div className="relative aspect-video">
-                  <img 
-                    src={video.thumbnail} 
-                    alt={video.title}
-                    className="object-cover w-full h-full"
-                  />
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <PlayCircleIcon size={48} className="text-white" />
+            {isLoading ? (
+              // Loading skeleton
+              Array.from({ length: 6 }).map((_, index) => (
+                <Card key={index} className="border-2 bg-background/80 backdrop-blur-sm overflow-hidden">
+                  <div className="relative aspect-video bg-muted animate-pulse" />
+                  <CardHeader>
+                    <div className="h-4 bg-muted animate-pulse rounded mb-2" />
+                    <div className="h-3 bg-muted animate-pulse rounded w-2/3" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <div className="h-3 bg-muted animate-pulse rounded w-1/2" />
+                      <div className="h-3 bg-muted animate-pulse rounded w-1/3" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : videos.length > 0 ? (
+              videos.map((video) => (
+                <Card key={video.id} className="border-2 hover:border-primary/50 transition-colors bg-background/80 backdrop-blur-sm overflow-hidden group">
+                  <div className="relative aspect-video">
+                    <img 
+                      src={video.thumbnail_url || 'https://images.unsplash.com/photo-1518152006812-edab29b069ac?auto=format&fit=crop&w=400'} 
+                      alt={video.title}
+                      className="object-cover w-full h-full"
+                    />
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <PlayCircleIcon size={48} className="text-white" />
+                    </div>
+                    {video.duration && (
+                      <Badge className="absolute top-2 right-2 bg-black/70 hover:bg-black/80">
+                        {video.duration}
+                      </Badge>
+                    )}
                   </div>
-                  <Badge className="absolute top-2 right-2 bg-black/70 hover:bg-black/80">
-                    {video.duration}
-                  </Badge>
-                </div>
-                <CardHeader>
-                  <CardTitle className="text-lg line-clamp-2 group-hover:text-primary transition-colors">
-                    {video.title}
-                  </CardTitle>
-                  <CardDescription className="line-clamp-2">
-                    {video.description}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-y-2 gap-x-4 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <GraduationCapIcon size={14} />
-                      {video.instructor}
+                  <CardHeader>
+                    <CardTitle className="text-lg line-clamp-2 group-hover:text-primary transition-colors">
+                      {video.title}
+                    </CardTitle>
+                    <CardDescription className="line-clamp-2">
+                      {video.description}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-y-2 gap-x-4 text-sm text-muted-foreground">
+                      {video.author_name && (
+                        <div className="flex items-center gap-1">
+                          <GraduationCapIcon size={14} />
+                          {video.author_name}
+                        </div>
+                      )}
+                      <div className="flex items-center gap-1">
+                        <TagIcon size={14} />
+                        {video.category_name || 'General'}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <EyeIcon size={14} />
-                      {video.views.toLocaleString()} views
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <StarIcon size={14} />
-                      {video.rating}/10
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <TagIcon size={14} />
-                      {video.category}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <PlayCircleIcon size={48} className="mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-medium text-muted-foreground mb-2">No videos available</h3>
+                <p className="text-sm text-muted-foreground">Videos will appear here once they are uploaded and approved.</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -390,35 +400,59 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {mockDocuments.map((doc) => (
-                    <div
-                      key={doc.id}
-                      className="flex items-center justify-between p-4 border-2 rounded-lg hover:border-primary/50 transition-colors bg-background/40 backdrop-blur-sm hover:bg-background/60 group"
-                    >
-                      <div className="space-y-1">
-                        <h3 className="font-medium text-lg group-hover:text-primary transition-colors">
-                          {doc.title}
-                        </h3>
-                        <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <span className="opacity-60 group-hover:opacity-100 transition-opacity">📥</span>
-                            {doc.downloads} downloads
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <span className="opacity-60 group-hover:opacity-100 transition-opacity">⭐</span>
-                            {doc.rating}/10 rating
-                          </span>
+                  {isLoading ? (
+                    // Loading skeleton
+                    Array.from({ length: 5 }).map((_, index) => (
+                      <div key={index} className="flex items-center justify-between p-4 border-2 rounded-lg bg-background/40 backdrop-blur-sm">
+                        <div className="space-y-2 flex-1">
+                          <div className="h-4 bg-muted animate-pulse rounded w-1/2" />
+                          <div className="h-3 bg-muted animate-pulse rounded w-1/3" />
                         </div>
+                        <div className="h-8 w-20 bg-muted animate-pulse rounded" />
                       </div>
-                      <Button 
-                        variant="outline" 
-                        className="border-2 hover:bg-secondary/10 relative group overflow-hidden"
+                    ))
+                  ) : documents.length > 0 ? (
+                    documents.map((doc) => (
+                      <div
+                        key={doc.id}
+                        className="flex items-center justify-between p-4 border-2 rounded-lg hover:border-primary/50 transition-colors bg-background/40 backdrop-blur-sm hover:bg-background/60 group"
                       >
-                        <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/10 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <span className="relative">Download</span>
-                      </Button>
+                        <div className="space-y-1">
+                          <h3 className="font-medium text-lg group-hover:text-primary transition-colors">
+                            {doc.title}
+                          </h3>
+                          <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <span className="opacity-60 group-hover:opacity-100 transition-opacity">�</span>
+                              {doc.category?.name || 'General'}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <span className="opacity-60 group-hover:opacity-100 transition-opacity">📅</span>
+                              {doc.year || new Date().getFullYear()}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <span className="opacity-60 group-hover:opacity-100 transition-opacity">✅</span>
+                              {doc.status}
+                            </span>
+                          </div>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          className="border-2 hover:bg-secondary/10 relative group overflow-hidden"
+                          onClick={() => window.open(doc.file_url, '_blank')}
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/10 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <span className="relative">Download</span>
+                        </Button>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-12">
+                      <FileTextIcon size={48} className="mx-auto text-muted-foreground mb-4" />
+                      <h3 className="text-lg font-medium text-muted-foreground mb-2">No documents available</h3>
+                      <p className="text-sm text-muted-foreground">Documents will appear here once they are uploaded and approved.</p>
                     </div>
-                  ))}
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -440,35 +474,61 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {mockVideos.map((video) => (
-                    <div
-                      key={video.id}
-                      className="flex items-center justify-between p-4 border-2 rounded-lg hover:border-primary/50 transition-colors bg-background/40 backdrop-blur-sm hover:bg-background/60 group"
-                    >
-                      <div className="space-y-1">
-                        <h3 className="font-medium text-lg group-hover:text-primary transition-colors">
-                          {video.title}
-                        </h3>
-                        <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <span className="opacity-60 group-hover:opacity-100 transition-opacity">👁️</span>
-                            {video.views} views
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <span className="opacity-60 group-hover:opacity-100 transition-opacity">⭐</span>
-                            {video.rating}/10 rating
-                          </span>
+                  {isLoading ? (
+                    // Loading skeleton
+                    Array.from({ length: 5 }).map((_, index) => (
+                      <div key={index} className="flex items-center justify-between p-4 border-2 rounded-lg bg-background/40 backdrop-blur-sm">
+                        <div className="space-y-2 flex-1">
+                          <div className="h-4 bg-muted animate-pulse rounded w-1/2" />
+                          <div className="h-3 bg-muted animate-pulse rounded w-1/3" />
                         </div>
+                        <div className="h-8 w-20 bg-muted animate-pulse rounded" />
                       </div>
-                      <Button 
-                        variant="outline" 
-                        className="border-2 hover:bg-secondary/10 relative group overflow-hidden"
+                    ))
+                  ) : videos.length > 0 ? (
+                    videos.map((video) => (
+                      <div
+                        key={video.id}
+                        className="flex items-center justify-between p-4 border-2 rounded-lg hover:border-primary/50 transition-colors bg-background/40 backdrop-blur-sm hover:bg-background/60 group"
                       >
-                        <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/10 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <span className="relative">Watch</span>
-                      </Button>
+                        <div className="space-y-1">
+                          <h3 className="font-medium text-lg group-hover:text-primary transition-colors">
+                            {video.title}
+                          </h3>
+                          <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <span className="opacity-60 group-hover:opacity-100 transition-opacity">🎥</span>
+                              {video.category_name || 'General'}
+                            </span>
+                            {video.duration && (
+                              <span className="flex items-center gap-1">
+                                <span className="opacity-60 group-hover:opacity-100 transition-opacity">⏱️</span>
+                                {video.duration}
+                              </span>
+                            )}
+                            <span className="flex items-center gap-1">
+                              <span className="opacity-60 group-hover:opacity-100 transition-opacity">✅</span>
+                              {video.status}
+                            </span>
+                          </div>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          className="border-2 hover:bg-secondary/10 relative group overflow-hidden"
+                          onClick={() => window.open(video.video_url, '_blank')}
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/10 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <span className="relative">Watch</span>
+                        </Button>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-12">
+                      <PlayCircleIcon size={48} className="mx-auto text-muted-foreground mb-4" />
+                      <h3 className="text-lg font-medium text-muted-foreground mb-2">No videos available</h3>
+                      <p className="text-sm text-muted-foreground">Videos will appear here once they are uploaded and approved.</p>
                     </div>
-                  ))}
+                  )}
                 </div>
               </CardContent>
             </Card>

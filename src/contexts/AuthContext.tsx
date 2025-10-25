@@ -9,11 +9,11 @@ type User = Omit<DbUser, 'password' | 'created_at' | 'last_login'>;
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name: string, username: string, avatarUrl: string | null) => Promise<void>;
-  logout: () => Promise<void>;
-  updateProfile: (data: Partial<User>) => Promise<void>;
-  updatePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<console.log>;
+  register: (email: string, password: string, name: string, username: string, avatarUrl: string | null) => Promise<console.log>;
+  logout: () => Promise<console.log>;
+  updateProfile: (data: Partial<User>) => Promise<console.log>;
+  updatePassword: (currentPassword: string, newPassword: string) => Promise<console.log>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);

@@ -102,7 +102,7 @@ const questions: Question[] = [
     text: 'Sun exposure',
     info: 'UV radiation damages skin cells and is the primary cause of skin cancer.',
     options: [
-      { text: 'Always use sunscreen and avoid sunburn', points: 0 },
+      { text: 'Always use sunscreen and aconsole.log sunburn', points: 0 },
       { text: 'Sometimes get sunburned', points: 1 },
       { text: 'Frequent sunburns or use tanning beds', points: 2 }
     ]

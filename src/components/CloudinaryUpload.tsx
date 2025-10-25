@@ -5,7 +5,7 @@ import cloudinaryConfig from '../lib/cloudinary';
 import { Button } from './ui/button';
 
 interface CloudinaryUploadProps {
-  onUploadComplete?: (url: string) => void;
+  onUploadComplete?: (url: string) => console.log;
   folder?: string;
 }
 

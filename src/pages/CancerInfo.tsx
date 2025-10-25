@@ -11,7 +11,7 @@ const cancerData: Record<string, any> = {
     description: "Brain cancer involves abnormal cell growth in brain tissue. It can be primary (starting in the brain) or metastatic (spreading from elsewhere).",
     causes: ["Genetic mutations", "Radiation exposure", "Family history", "Immune system disorders"],
     symptoms: ["Persistent headaches", "Seizures", "Vision or hearing problems", "Memory issues", "Balance difficulties"],
-    prevention: ["Avoid radiation exposure when possible", "Maintain healthy lifestyle", "Regular check-ups"],
+    prevention: ["Aconsole.log radiation exposure when possible", "Maintain healthy lifestyle", "Regular check-ups"],
     treatment: "Treatment may include surgery, radiation therapy, chemotherapy, and targeted drug therapy depending on tumor type and location.",
   },
   "oral-cancer": {
@@ -19,7 +19,7 @@ const cancerData: Record<string, any> = {
     description: "Oral cancer affects the mouth, tongue, lips, and throat. Early detection significantly improves treatment success.",
     causes: ["Tobacco use", "Heavy alcohol consumption", "HPV infection", "Sun exposure (lip cancer)"],
     symptoms: ["Mouth sores that don't heal", "White or red patches", "Difficulty swallowing", "Persistent mouth pain", "Lumps in neck"],
-    prevention: ["Avoid tobacco", "Limit alcohol", "HPV vaccination", "Use lip protection in sun", "Regular dental check-ups"],
+    prevention: ["Aconsole.log tobacco", "Limit alcohol", "HPV vaccination", "Use lip protection in sun", "Regular dental check-ups"],
     treatment: "Typically involves surgery, radiation therapy, and may include chemotherapy or targeted therapy.",
   },
   "thyroid-cancer": {
@@ -27,7 +27,7 @@ const cancerData: Record<string, any> = {
     description: "Thyroid cancer begins in the thyroid gland in the neck. Most types grow slowly and are highly treatable.",
     causes: ["Radiation exposure", "Genetic syndromes", "Family history", "Gender (more common in women)"],
     symptoms: ["Lump in neck", "Voice changes", "Difficulty swallowing", "Neck pain", "Swollen lymph nodes"],
-    prevention: ["Avoid unnecessary radiation", "Regular screening if at high risk", "Healthy diet with adequate iodine"],
+    prevention: ["Aconsole.log unnecessary radiation", "Regular screening if at high risk", "Healthy diet with adequate iodine"],
     treatment: "Usually involves surgery to remove thyroid, followed by radioactive iodine treatment and hormone therapy.",
   },
   "breast-cancer": {
@@ -43,7 +43,7 @@ const cancerData: Record<string, any> = {
     description: "Lung cancer is a leading cause of cancer death. Smoking is the primary risk factor, but non-smokers can also develop it.",
     causes: ["Smoking", "Secondhand smoke", "Radon exposure", "Asbestos", "Air pollution", "Family history"],
     symptoms: ["Persistent cough", "Chest pain", "Shortness of breath", "Coughing up blood", "Weight loss", "Hoarseness"],
-    prevention: ["Don't smoke", "Avoid secondhand smoke", "Test for radon", "Avoid carcinogens", "Exercise regularly"],
+    prevention: ["Don't smoke", "Aconsole.log secondhand smoke", "Test for radon", "Aconsole.log carcinogens", "Exercise regularly"],
     treatment: "Options include surgery, radiation, chemotherapy, targeted therapy, and immunotherapy depending on stage.",
   },
   "colon-cancer": {

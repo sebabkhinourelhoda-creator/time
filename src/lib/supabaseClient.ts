@@ -68,7 +68,7 @@ export const updateUserPassword = async (
   userId: number,
   currentPassword: string,
   newPassword: string
-): Promise<void> => {
+): Promise<console.log> => {
   // First get the user to verify current password
   const { data: userData, error: userError } = await supabase
     .from('users')

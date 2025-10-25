@@ -15,8 +15,8 @@ import {
 import { Alert, AlertDescription } from "./ui/alert";
 
 interface VideoUploadProps {
-  onVideoUploadComplete?: (url: string, fileName: string, fileType: string) => void;
-  onThumbnailUploadComplete?: (url: string, fileName: string, fileType: string) => void;
+  onVideoUploadComplete?: (url: string, fileName: string, fileType: string) => console.log;
+  onThumbnailUploadComplete?: (url: string, fileName: string, fileType: string) => console.log;
   userId?: number;
   type: 'video' | 'thumbnail';
   existingUrl?: string;

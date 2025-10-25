@@ -6,7 +6,7 @@ import { Card } from './ui/card';
 import { X } from 'lucide-react';
 
 interface DocumentUploadProps {
-  onUploadComplete?: (url: string, fileName: string, fileType: string) => void;
+  onUploadComplete?: (url: string, fileName: string, fileType: string) => console.log;
   folder?: string;
   acceptedFileTypes?: string; // e.g., ".pdf,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 }

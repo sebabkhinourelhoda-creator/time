@@ -14,7 +14,7 @@ import { useLocation, Link } from "react-router-dom";
 
 interface DocumentsSidebarProps {
   isOpen?: boolean;
-  onClose?: () => void;
+  onClose?: () => console.log;
 }
 
 const sidebarLinks = [

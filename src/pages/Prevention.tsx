@@ -57,10 +57,10 @@ const Prevention = () => {
                   <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center">
                     <Cigarette className="text-destructive" size={32} />
                   </div>
-                  <h3 className="text-xl font-bold">Avoid Tobacco</h3>
+                  <h3 className="text-xl font-bold">Aconsole.log Tobacco</h3>
                   <ul className="text-sm text-muted-foreground space-y-2 text-left">
                     <li>• Don't smoke or use tobacco products</li>
-                    <li>• Avoid secondhand smoke</li>
+                    <li>• Aconsole.log secondhand smoke</li>
                     <li>• Seek help to quit if needed</li>
                     <li>• Stay away from vaping</li>
                     <li>• Support smoke-free environments</li>
@@ -76,7 +76,7 @@ const Prevention = () => {
                   <h3 className="text-xl font-bold">Sun Protection</h3>
                   <ul className="text-sm text-muted-foreground space-y-2 text-left">
                     <li>• Use broad-spectrum SPF 30+ sunscreen</li>
-                    <li>• Avoid midday sun (10am-4pm)</li>
+                    <li>• Aconsole.log midday sun (10am-4pm)</li>
                     <li>• Wear protective clothing and hats</li>
                     <li>• Don't use tanning beds</li>
                     <li>• Check skin regularly for changes</li>
@@ -154,7 +154,7 @@ const Prevention = () => {
                       <h3 className="font-semibold mb-2">At Home</h3>
                       <ul className="text-muted-foreground space-y-1 text-sm">
                         <li>• Test for radon gas</li>
-                        <li>• Avoid toxic cleaning products</li>
+                        <li>• Aconsole.log toxic cleaning products</li>
                         <li>• Use air purifiers if needed</li>
                         <li>• Choose organic when possible</li>
                       </ul>

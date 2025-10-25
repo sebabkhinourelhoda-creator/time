@@ -17,8 +17,8 @@ interface DocumentFormProps {
     year: number;
     category_id: number;
     file_url: string;
-  }) => Promise<void>;
-  onCancel: () => void;
+  }) => Promise<console.log>;
+  onCancel: () => console.log;
 }
 
 export const DocumentForm = ({ categories, onSubmit, onCancel }: DocumentFormProps) => {

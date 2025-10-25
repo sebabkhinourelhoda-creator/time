@@ -63,7 +63,7 @@ const organsData: OrganData[] = [
     detailedInfo: {
       symptoms: ["Persistent headaches", "Seizures", "Memory problems", "Vision changes", "Balance issues"],
       riskFactors: ["Age", "Family history", "Radiation exposure", "Genetic disorders"],
-      prevention: ["Avoid radiation exposure", "Healthy lifestyle", "Regular check-ups"],
+      prevention: ["Aconsole.log radiation exposure", "Healthy lifestyle", "Regular check-ups"],
       earlyDetection: "MRI and CT scans can detect brain tumors early"
     },
     position: [-3, 2, 0],
@@ -78,7 +78,7 @@ const organsData: OrganData[] = [
     detailedInfo: {
       symptoms: ["Persistent cough", "Chest pain", "Shortness of breath", "Blood in sputum", "Weight loss"],
       riskFactors: ["Smoking", "Air pollution", "Asbestos exposure", "Family history"],
-      prevention: ["Quit smoking", "Avoid secondhand smoke", "Test home for radon"],
+      prevention: ["Quit smoking", "Aconsole.log secondhand smoke", "Test home for radon"],
       earlyDetection: "Low-dose CT screening for high-risk individuals"
     },
     position: [-1, 1, 0],
@@ -108,7 +108,7 @@ const organsData: OrganData[] = [
     detailedInfo: {
       symptoms: ["Stomach pain", "Nausea", "Loss of appetite", "Feeling full quickly", "Weight loss"],
       riskFactors: ["H. pylori infection", "Diet high in salted foods", "Smoking", "Family history"],
-      prevention: ["Treat H. pylori", "Eat fresh fruits/vegetables", "Avoid processed foods"],
+      prevention: ["Treat H. pylori", "Eat fresh fruits/vegetables", "Aconsole.log processed foods"],
       earlyDetection: "Endoscopy for high-risk individuals"
     },
     position: [3, 0, 0],
@@ -198,7 +198,7 @@ const organsData: OrganData[] = [
     detailedInfo: {
       symptoms: ["Neck lump", "Voice changes", "Difficulty swallowing", "Neck pain", "Swollen lymph nodes"],
       riskFactors: ["Gender (more common in women)", "Radiation exposure", "Family history", "Iodine deficiency"],
-      prevention: ["Avoid radiation exposure", "Regular check-ups"],
+      prevention: ["Aconsole.log radiation exposure", "Regular check-ups"],
       earlyDetection: "Physical exam and ultrasound"
     },
     position: [-3, 1, 0],
@@ -243,7 +243,7 @@ const organsData: OrganData[] = [
     detailedInfo: {
       symptoms: ["New moles", "Changes in existing moles", "Sores that don't heal", "Itchy patches"],
       riskFactors: ["UV exposure", "Fair skin", "Family history", "Many moles"],
-      prevention: ["Use sunscreen", "Avoid peak sun hours", "Wear protective clothing"],
+      prevention: ["Use sunscreen", "Aconsole.log peak sun hours", "Wear protective clothing"],
       earlyDetection: "Regular skin self-exams and dermatologist visits"
     },
     position: [-1, 0, 0],
@@ -258,7 +258,7 @@ const organsData: OrganData[] = [
     detailedInfo: {
       symptoms: ["Swollen lymph nodes", "Fever", "Night sweats", "Weight loss", "Fatigue"],
       riskFactors: ["Age", "Weakened immune system", "Infections", "Family history"],
-      prevention: ["Maintain healthy immune system", "Avoid infections"],
+      prevention: ["Maintain healthy immune system", "Aconsole.log infections"],
       earlyDetection: "Physical exam and blood tests"
     },
     position: [3, 1, 0],
