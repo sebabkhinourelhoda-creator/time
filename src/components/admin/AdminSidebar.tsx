@@ -14,7 +14,8 @@ import {
   Home,
   LogOut,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  FolderOpen
 } from "lucide-react";
 import { useLocation, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -26,6 +27,7 @@ interface AdminStats {
   totalVideos: number;
   totalDocuments: number;
   totalComments: number;
+  totalCategories: number;
   pendingVideos: number;
   pendingDocuments: number;
 }
@@ -135,6 +137,11 @@ export function AdminSidebar() {
         .from('video_comments')
         .select('*', { count: 'exact', head: true });
 
+      // Get total categories
+      const { count: totalCategories } = await supabase
+        .from('document_categories')
+        .select('*', { count: 'exact', head: true });
+
       // Get pending videos
       const { count: pendingVideos } = await supabase
         .from('videos')
@@ -152,6 +159,7 @@ export function AdminSidebar() {
         totalVideos: totalVideos || 0,
         totalDocuments: totalDocuments || 0,
         totalComments: totalComments || 0,
+        totalCategories: totalCategories || 0,
         pendingVideos: pendingVideos || 0,
         pendingDocuments: pendingDocuments || 0
       });
@@ -235,6 +243,12 @@ export function AdminSidebar() {
           count: stats?.pendingDocuments
         }
       ]
+    },
+    {
+      label: "Categories",
+      icon: FolderOpen,
+      count: stats?.totalCategories,
+      href: "/admin/categories"
     },
     {
       label: "Comments",
