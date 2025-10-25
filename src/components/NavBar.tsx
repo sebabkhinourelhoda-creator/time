@@ -26,18 +26,20 @@ export function NavBar({ onMenuClick }: NavBarProps) {
   
   return (
     <header className={`h-16 border-b border-border/40 flex items-center fixed top-0 z-40 bg-background/95 backdrop-blur-sm ${
-      isAdminPage ? 'left-64 right-0' : 'left-0 lg:left-64 right-0'
+      isAdminPage ? 'md:left-64 left-0 right-0' : 'left-0 lg:left-64 right-0'
     }`}>
       <div className="flex-1 flex items-center justify-between px-6 gap-4">
-        {/* Mobile hamburger menu */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onMenuClick}
-          className="lg:hidden"
-        >
-          <MenuIcon size={20} />
-        </Button>
+        {/* Mobile hamburger menu - hidden on admin pages */}
+        {!isAdminPage && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onMenuClick}
+            className="lg:hidden"
+          >
+            <MenuIcon size={20} />
+          </Button>
+        )}
 
         <div className="flex items-center gap-4 ml-auto">
           {/* User Info Display */}

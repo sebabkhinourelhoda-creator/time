@@ -145,8 +145,8 @@ export default function AdminDashboard() {
         <NavBar />
         <AdminSidebar />
         
-        {/* Main content with left margin to account for sidebar and proper top margin */}
-        <div className="ml-64 pt-20 p-8">
+        {/* Main content with responsive left margin */}
+        <div className="md:ml-64 pt-20 p-4 md:p-8">
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center justify-between">

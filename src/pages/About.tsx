@@ -43,33 +43,63 @@ const About = () => {
                 <Users className="text-primary mt-1 flex-shrink-0" size={48} />
                 <div>
                   <h2 className="text-3xl font-bold mb-4 text-primary">Our Team</h2>
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="text-xl font-semibold mb-2">Medical Experts</h3>
-                      <p className="text-muted-foreground">
-                        Board-certified oncologists, radiologists, and surgeons with decades of combined experience 
-                        in cancer diagnosis, treatment, and research.
-                      </p>
+                  <div className="space-y-6">
+                    <div className="bg-gradient-to-r from-secondary/10 to-primary/10 p-6 rounded-lg">
+                      <div className="flex items-start space-x-4">
+                        <div className="w-12 h-12 bg-secondary rounded-full flex items-center justify-center">
+                          <span className="text-white font-bold text-lg">S</span>
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-xl font-bold mb-2 text-secondary">Sebabkhi Faress Eddine</h3>
+                          <p className="text-muted-foreground mb-3">
+                                      First-Year Master's Student in Software Engineering | Full-Stack Web Developer                          </p>
+                          <p className="text-sm text-muted-foreground mb-3">
+                            Passionate about leveraging technology to make healthcare information accessible and user-friendly. 
+                            Specializes in modern web development, creating intuitive interfaces for complex medical data.
+                          </p>
+                          <a 
+                            href="https://www.linkedin.com/in/sebabkhi-faress-eddine/" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-secondary hover:text-secondary/80 font-medium text-sm transition-colors"
+                          >
+                            Connect on LinkedIn →
+                          </a>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-xl font-semibold mb-2">Research Scientists</h3>
-                      <p className="text-muted-foreground">
-                        PhD researchers specializing in molecular biology, genetics, immunology, and cancer biology 
-                        who translate cutting-edge discoveries into practical insights.
-                      </p>
+
+                    <div className="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-lg">
+                      <div className="flex items-start space-x-4">
+                        <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
+                          <span className="text-white font-bold text-lg">A</span>
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-xl font-bold mb-2 text-primary">Segueni Ali</h3>
+                          <p className="text-muted-foreground mb-3">
+                            Idea Owner, CEO & Founder of New Era Club
+                          </p>
+                          <p className="text-sm text-muted-foreground mb-3">
+                            Visionary leader dedicated to revolutionizing cancer awareness and prevention through innovative 
+                            approaches. Focuses on building communities and networks that empower individuals with 
+                            life-saving knowledge and resources.
+                          </p>
+                          <a 
+                            href="https://www.linkedin.com/in/ali-segueni-b441a2378" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-primary hover:text-primary/80 font-medium text-sm transition-colors"
+                          >
+                            Connect on LinkedIn →
+                          </a>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-xl font-semibold mb-2">AI & Technology Specialists</h3>
-                      <p className="text-muted-foreground">
-                        Data scientists and engineers developing AI-powered tools for early detection, risk assessment, 
-                        and personalized education delivery.
-                      </p>
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-semibold mb-2">Patient Advocates</h3>
-                      <p className="text-muted-foreground">
-                        Survivors, caregivers, and health educators who ensure our content is compassionate, 
-                        understandable, and truly helpful for those affected by cancer.
+
+                    <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                      <p className="text-center text-muted-foreground text-sm">
+                        <strong>Our Mission:</strong> Combining technical expertise with visionary leadership to create 
+                        accessible, reliable, and life-changing cancer education resources for everyone.
                       </p>
                     </div>
                   </div>

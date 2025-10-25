@@ -15,7 +15,9 @@ import {
   LogOut,
   ChevronDown,
   ChevronRight,
-  FolderOpen
+  FolderOpen,
+  Menu,
+  X
 } from "lucide-react";
 import { useLocation, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -40,9 +42,10 @@ interface SidebarItemProps {
   children?: SidebarItemProps[];
   isActive?: boolean;
   onClick?: () => void;
+  onMobileClose?: () => void;
 }
 
-function SidebarItem({ label, icon: Icon, href, count, children, isActive, onClick }: SidebarItemProps) {
+function SidebarItem({ label, icon: Icon, href, count, children, isActive, onClick, onMobileClose }: SidebarItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const location = useLocation();
   
@@ -55,6 +58,10 @@ function SidebarItem({ label, icon: Icon, href, count, children, isActive, onCli
     }
     if (children) {
       setIsExpanded(!isExpanded);
+    }
+    // Close mobile menu when clicking on a link
+    if (href && onMobileClose) {
+      onMobileClose();
     }
   };
 
@@ -97,7 +104,11 @@ function SidebarItem({ label, icon: Icon, href, count, children, isActive, onCli
       {children && isExpanded && (
         <div className="ml-6 mt-1 space-y-1">
           {children.map((child, index) => (
-            <SidebarItem key={index} {...child} />
+            <SidebarItem 
+              key={index} 
+              {...child} 
+              onMobileClose={onMobileClose}
+            />
           ))}
         </div>
       )}
@@ -109,6 +120,7 @@ export function AdminSidebar() {
   const { user, logout } = useAuth();
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     loadStats();
@@ -275,21 +287,45 @@ export function AdminSidebar() {
   ];
 
   return (
-    <div className="h-screen w-64 bg-card border-r border-border/40 flex flex-col fixed left-0 top-0 pt-0 z-50">
-      {/* T2T Header */}
-      <div className="px-4 py-4 border-b border-border/40">
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">T2T</span>
-          </div>
-          <div>
-            <h2 className="font-bold text-lg bg-gradient-to-r from-red-500 to-red-600 bg-clip-text text-transparent">
-              Time2Thrive
-            </h2>
-            <p className="text-xs text-muted-foreground">Admin Panel</p>
+    <>
+      {/* Mobile Menu Button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="md:hidden fixed top-4 left-4 z-[60] bg-background border shadow-sm"
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+      >
+        {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+      </Button>
+
+      {/* Mobile Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="md:hidden fixed inset-0 bg-black/60 z-40"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <div className={cn(
+        "h-screen w-64 bg-background border-r border-border/40 flex flex-col fixed left-0 top-0 pt-0 z-50 transition-transform duration-300 shadow-lg",
+        "md:translate-x-0", // Always visible on desktop
+        isMobileMenuOpen ? "translate-x-0" : "-translate-x-full" // Toggle on mobile
+      )}>
+        {/* T2T Header */}
+        <div className="px-4 py-4 border-b border-border/40">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">T2T</span>
+            </div>
+            <div>
+              <h2 className="font-bold text-lg bg-gradient-to-r from-red-500 to-red-600 bg-clip-text text-transparent">
+                Time2Thrive
+              </h2>
+              <p className="text-xs text-muted-foreground">Admin Panel</p>
+            </div>
           </div>
         </div>
-      </div>
 
       {/* Admin User Profile */}
       <div className="px-4 py-4 border-b border-border/40">
@@ -318,9 +354,12 @@ export function AdminSidebar() {
 
       {/* Navigation Links */}
       <div className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
-        
         {sidebarItems.map((item, index) => (
-          <SidebarItem key={index} {...item} />
+          <SidebarItem 
+            key={index} 
+            {...item} 
+            onMobileClose={() => setIsMobileMenuOpen(false)}
+          />
         ))}
       </div>
 
@@ -341,5 +380,6 @@ export function AdminSidebar() {
         </Button>
       </div>
     </div>
+    </>
   );
 }
