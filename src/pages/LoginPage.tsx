@@ -9,7 +9,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { ParticlesBg } from '@/components/ParticlesBg';
 import { DNAIcon, PulseIcon, CellIcon, MicroscopeIcon } from '@/components/MedicalIcons';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2, ArrowLeft, Home } from 'lucide-react';
 
 const IMGBB_API_KEY = 'f8532e3030ce61269ae0eb8bd4b42c41';
 
@@ -112,6 +112,16 @@ export default function LoginPage() {
 
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-4">
+      {/* Back to Home Button */}
+      <Button
+        variant="ghost"
+        onClick={() => navigate('/')}
+        className="absolute top-4 left-4 z-10 flex items-center gap-2 bg-background/80 backdrop-blur-sm hover:bg-background/90"
+      >
+        <Home size={20} />
+        <span className="hidden sm:inline">Back to Home</span>
+      </Button>
+
       {/* Background with gradient and noise */}
       <div 
         className="absolute inset-0 bg-background"

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Search, Edit, Trash2, Shield, User, Crown } from 'lucide-react';
+import { Search, Edit, Trash2, Shield, User, Crown, Home } from 'lucide-react';
 import { NavBar } from '@/components/NavBar';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import AdminRoute from '@/components/AdminRoute';
@@ -25,6 +26,7 @@ interface User {
 }
 
 export default function AdminUsersPage() {
+  const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -192,6 +194,17 @@ export default function AdminUsersPage() {
         
         <div className="md:ml-64 pt-20 p-4 md:p-8">
           <div className="mb-8">
+            <div className="flex items-center gap-3 mb-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/')}
+                className="flex items-center gap-2"
+              >
+                <Home size={16} />
+                <span className="hidden sm:inline">Back to Home</span>
+              </Button>
+            </div>
             <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
               <Shield className="h-8 w-8 text-red-600" />
               User Management

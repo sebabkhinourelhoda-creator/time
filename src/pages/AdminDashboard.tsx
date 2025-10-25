@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,8 @@ import {
   BarChart3,
   TrendingUp,
   RefreshCw,
-  AlertTriangle
+  AlertTriangle,
+  Home
 } from 'lucide-react';
 import AdminRoute from '../components/AdminRoute';
 import { NavBar } from '@/components/NavBar';
@@ -33,6 +35,7 @@ interface DashboardStats {
 
 export default function AdminDashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [stats, setStats] = useState<DashboardStats>({
     totalUsers: 0,
@@ -151,6 +154,17 @@ export default function AdminDashboard() {
           <div className="mb-8">
             <div className="flex items-center justify-between">
               <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigate('/')}
+                    className="flex items-center gap-2"
+                  >
+                    <Home size={16} />
+                    <span className="hidden sm:inline">Back to Home</span>
+                  </Button>
+                </div>
                 <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
                   <div className="p-2 bg-red-100 rounded-lg">
                     <Shield className="h-6 w-6 text-red-600" />
