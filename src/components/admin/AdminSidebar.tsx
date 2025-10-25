@@ -314,7 +314,7 @@ export function AdminSidebar() {
       )}>
         {/* T2T Header */}
         <div className="px-4 py-4 border-b border-border/40">
-          <div className="flex items-center space-x-3">
+          <Link to="/" className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">T2T</span>
             </div>
@@ -324,7 +324,7 @@ export function AdminSidebar() {
               </h2>
               <p className="text-xs text-muted-foreground">Admin Panel</p>
             </div>
-          </div>
+          </Link>
         </div>
 
       {/* Admin User Profile */}

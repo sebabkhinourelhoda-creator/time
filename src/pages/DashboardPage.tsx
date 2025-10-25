@@ -5,12 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { fetchDocuments, Document } from '@/lib/documents';
-import { fetchVideos, Video } from '@/lib/videos';
+import { fetchVideos, fetchUserVideos, Video } from '@/lib/videos';
 import {
   FileTextIcon,
   DownloadIcon,
@@ -58,20 +57,23 @@ export default function DashboardPage() {
   // Load dynamic data on component mount
   useEffect(() => {
     const loadData = async () => {
+      if (!user?.id) return; // Don't load data if user is not available
+      
       try {
         setIsLoading(true);
         
-        // Fetch documents with verified status
+        // Fetch only current user's documents
         const documentsData = await fetchDocuments({ 
           status: 'verified',
-          showAll: true 
+          user_id: user?.id, // Filter by current user
+          showAll: false
         });
         
-        // Fetch videos with approved status  
-        const videosData = await fetchVideos(undefined, 'verified');
+        // Fetch only current user's videos
+        const videosData = await fetchUserVideos(user?.id);
         
         setDocuments(documentsData || []);
-        setVideos(videosData || []);
+        setVideos((videosData || []).filter(video => video.status === 'verified'));
       } catch (error) {
         console.error('Error loading dashboard data:', error);
         toast({
@@ -85,18 +87,7 @@ export default function DashboardPage() {
     };
 
     loadData();
-  }, [toast]);
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // TODO: Implement actual file upload
-      toast({
-        title: 'File uploaded',
-        description: 'Your document has been uploaded successfully.',
-      });
-    }
-  };
+  }, [toast, user]); // Add user as dependency
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -156,12 +147,12 @@ export default function DashboardPage() {
                     : user?.username?.[0].toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
-              <Label
+              <label
                 htmlFor="avatar-upload"
                 className="absolute bottom-0 right-0 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full p-2 cursor-pointer shadow-lg transition-colors"
               >
                 📷
-              </Label>
+              </label>
               <Input
                 id="avatar-upload"
                 type="file"
@@ -290,17 +281,13 @@ export default function DashboardPage() {
         <div className="mt-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-semibold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Educational Videos
+              Your Videos
             </h2>
             <div className="flex gap-4">
               <div className="relative">
                 <SearchIcon size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
                 <Input className="pl-9 w-[200px] bg-card/50" placeholder="Search videos..." />
               </div>
-              <Button className="gap-2">
-                <PlusCircleIcon size={18} />
-                Upload Video
-              </Button>
             </div>
           </div>
 
@@ -388,15 +375,8 @@ export default function DashboardPage() {
                   <CardTitle className="text-2xl bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                     Your Documents
                   </CardTitle>
-                  <CardDescription>Manage and share your medical research documents</CardDescription>
+                  <CardDescription>View and manage your uploaded medical research documents</CardDescription>
                 </div>
-                <Label className="cursor-pointer">
-                  <Input type="file" className="hidden" onChange={handleFileUpload} />
-                  <Button className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary relative group overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-r from-secondary/0 via-secondary/30 to-secondary/0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <span className="relative">Upload Document</span>
-                  </Button>
-                </Label>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -463,14 +443,10 @@ export default function DashboardPage() {
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                   <CardTitle className="text-2xl bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                    Educational Videos
+                    Your Videos
                   </CardTitle>
-                  <CardDescription>Share and watch educational content</CardDescription>
+                  <CardDescription>View and watch your uploaded educational content</CardDescription>
                 </div>
-                <Button className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary relative group overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-r from-secondary/0 via-secondary/30 to-secondary/0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <span className="relative">Upload Video</span>
-                </Button>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">

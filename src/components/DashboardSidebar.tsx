@@ -78,7 +78,7 @@ export function DashboardSidebar({ isOpen = true, onClose }: DashboardSidebarPro
       )}>
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border">
-          <div className="flex items-center space-x-3">
+          <Link to="/" className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">T2T</span>
             </div>
@@ -88,7 +88,7 @@ export function DashboardSidebar({ isOpen = true, onClose }: DashboardSidebarPro
               </h2>
               <p className="text-xs text-muted-foreground">Health Dashboard</p>
             </div>
-          </div>
+          </Link>
           {onClose && (
             <Button
               variant="ghost"
@@ -136,7 +136,12 @@ export function DashboardSidebar({ isOpen = true, onClose }: DashboardSidebarPro
             <p className="text-xs text-muted-foreground">
               Contact our support team for assistance with any issues.
             </p>
-            <Button variant="secondary" size="sm" className="w-full">
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              className="w-full"
+              onClick={() => window.open('https://www.linkedin.com/in/sebabkhi-faress-eddine/', '_blank')}
+            >
               Contact Support
             </Button>
           </div>

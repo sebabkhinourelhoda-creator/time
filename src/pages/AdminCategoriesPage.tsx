@@ -247,7 +247,8 @@ export default function AdminCategoriesPage() {
         <NavBar />
         <AdminSidebar />
         
-        <div className="md:ml-64 pt-20 p-4 md:p-8">
+        {/* Main content with responsive left margin */}
+        <div className="md:ml-64 pt-16 mt-16 p-4 md:p-8">
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center justify-between">

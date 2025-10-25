@@ -136,7 +136,7 @@ const Contact = () => {
             <div className="text-center">
               <h3 className="font-bold text-destructive mb-2">Medical Emergency?</h3>
               <p className="text-sm text-muted-foreground">
-                If you are experiencing a medical emergency, please call 911 or visit your nearest emergency room immediately. 
+                If you are experiencing a medical emergency, please call 12 or visit your nearest emergency room immediately. 
                 Time2Thrive provides educational information and is not a substitute for emergency medical care.
               </p>
             </div>

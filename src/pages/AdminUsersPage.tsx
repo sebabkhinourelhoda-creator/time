@@ -192,7 +192,8 @@ export default function AdminUsersPage() {
         <NavBar />
         <AdminSidebar />
         
-        <div className="md:ml-64 pt-20 p-4 md:p-8">
+        {/* Main content with responsive left margin */}
+        <div className="md:ml-64 pt-16 mt-16 p-4 md:p-8">
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-2">
               <Button

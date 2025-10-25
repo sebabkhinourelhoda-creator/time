@@ -145,7 +145,12 @@ export function Sidebar() {
           <p className="text-xs text-muted-foreground">
             Contact our support team for assistance with any issues.
           </p>
-          <Button variant="secondary" size="sm" className="w-full">
+          <Button 
+            variant="secondary" 
+            size="sm" 
+            className="w-full"
+            onClick={() => window.open('https://www.linkedin.com/in/sebabkhi-faress-eddine/', '_blank')}
+          >
             Contact Support
           </Button>
         </div>
