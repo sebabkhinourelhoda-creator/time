@@ -59,9 +59,6 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-white/20 pt-8 text-center">
-          <p className="text-lg font-medium italic mb-2">
-            "Knowledge heals — awareness saves lives."
-          </p>
           <p className="text-sm opacity-75">
             © 2024 Time2Thrive. All rights reserved. | Medical information for educational purposes only.
           </p>

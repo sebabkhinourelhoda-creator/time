@@ -63,15 +63,20 @@ const Home = () => {
               </p>
             </div>
 
-            <div className="bg-card p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                <Microscope className="text-primary" size={32} />
+            <Link to="/research-papers" className="block">
+              <div className="bg-card p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow cursor-pointer group">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                  <Microscope className="text-primary" size={32} />
+                </div>
+                <h3 className="text-2xl font-semibold mb-3 group-hover:text-primary transition-colors">Research-Backed</h3>
+                <p className="text-muted-foreground">
+                  Access the latest medical research and clinical studies from trusted sources worldwide.
+                </p>
+                <div className="mt-4 text-primary font-medium group-hover:underline">
+                  Browse Research Papers →
+                </div>
               </div>
-              <h3 className="text-2xl font-semibold mb-3">Research-Backed</h3>
-              <p className="text-muted-foreground">
-                Access the latest medical research and clinical studies from trusted sources worldwide.
-              </p>
-            </div>
+            </Link>
 
             <div className="bg-card p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
               <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mb-4">

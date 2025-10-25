@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,39 +9,104 @@ import { useToast } from '@/components/ui/use-toast';
 import { ParticlesBg } from '@/components/ParticlesBg';
 import { DNAIcon, PulseIcon, CellIcon, MicroscopeIcon } from '@/components/MedicalIcons';
 import { motion } from 'framer-motion';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
+
+const IMGBB_API_KEY = 'f8532e3030ce61269ae0eb8bd4b42c41';
+
+async function uploadToImgBB(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append('image', file);
+
+  const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) throw new Error('Failed to upload image');
+  
+  const data = await response.json();
+  if (!data.success) throw new Error(data.error?.message || 'Upload failed');
+  
+  return data.data.url;
+}
 
 export default function LoginPage() {
   const [isRegister, setIsRegister] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
+  const [avatar, setAvatar] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { login, register } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+
+  // Get the intended destination from the state or default to dashboard
+  const from = location.state?.from?.pathname || '/dashboard';
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      const file = e.target.files[0];
+      setAvatar(file);
+      // Create preview URL
+      const previewUrl = URL.createObjectURL(file);
+      setAvatarPreview(previewUrl);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       if (isRegister) {
-        await register(email, password, name);
+        let avatarUrl = null;
+        if (avatar) {
+          try {
+            avatarUrl = await uploadToImgBB(avatar);
+          } catch (error) {
+            console.error('Failed to upload avatar:', error);
+            toast({
+              title: 'Avatar Upload Failed',
+              description: 'Registration will continue without an avatar.',
+              variant: 'destructive',
+            });
+          }
+        }
+
+        await register(email, password, name, username || email.split('@')[0], avatarUrl);
         toast({
           title: 'Registration successful',
           description: 'Welcome to Time2Thrive Health!',
         });
+        
+        // Get user data after registration to check role
+        const userData = JSON.parse(localStorage.getItem('user') || '{}');
+        const redirectPath = userData.role === 'admin' ? '/admin' : '/dashboard';
+        navigate(redirectPath, { replace: true });
       } else {
         await login(email, password);
         toast({
           title: 'Login successful',
           description: 'Welcome back!',
         });
+        
+        // Get user data after login to check role
+        const userData = JSON.parse(localStorage.getItem('user') || '{}');
+        const redirectPath = userData.role === 'admin' ? '/admin' : '/dashboard';
+        navigate(redirectPath, { replace: true });
       }
-      navigate('/dashboard');
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: 'Error',
-        description: 'Something went wrong. Please try again.',
+        description: error.message || 'Something went wrong. Please try again.',
         variant: 'destructive',
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -205,25 +270,68 @@ export default function LoginPage() {
               <CellIcon />
             </div>
             {isRegister && (
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3 }}
-                className="space-y-2"
-              >
-                <Label htmlFor="name" className="text-sm font-medium">
-                  Full Name
-                </Label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="Dr. Jane Smith"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required={isRegister}
-                  className="border-2 focus:border-primary/50 transition-colors"
-                />
-              </motion.div>
+              <>
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-4"
+                >
+                  <div className="space-y-2">
+                    <Label htmlFor="name" className="text-sm font-medium">
+                      Full Name
+                    </Label>
+                    <Input
+                      id="name"
+                      type="text"
+                      placeholder="Dr. Jane Smith"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required={isRegister}
+                      className="border-2 focus:border-primary/50 transition-colors"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="username" className="text-sm font-medium">
+                      Username
+                    </Label>
+                    <Input
+                      id="username"
+                      type="text"
+                      placeholder="dr_jane"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      required={isRegister}
+                      className="border-2 focus:border-primary/50 transition-colors"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="avatar" className="text-sm font-medium">
+                      Profile Picture (optional)
+                    </Label>
+                    <div className="flex items-center gap-4">
+                      {avatarPreview && (
+                        <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-primary/20">
+                          <img
+                            src={avatarPreview}
+                            alt="Avatar preview"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <Input
+                        id="avatar"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarChange}
+                        className="border-2 focus:border-primary/50 transition-colors"
+                      />
+                    </div>
+                  </div>
+                </motion.div>
+              </>
             )}
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-medium">
@@ -243,25 +351,45 @@ export default function LoginPage() {
               <Label htmlFor="password" className="text-sm font-medium">
                 Password
               </Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="border-2 focus:border-primary/50 transition-colors"
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="border-2 focus:border-primary/50 transition-colors pr-12"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 p-0 hover:bg-transparent"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
+                  )}
+                </Button>
+              </div>
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4 relative">
             <Button 
               type="submit" 
-              className="w-full text-lg font-semibold bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary relative group overflow-hidden"
+              disabled={isLoading}
+              className="w-full text-lg font-semibold bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary relative group overflow-hidden disabled:opacity-70 disabled:cursor-not-allowed"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500" />
-              <span className="relative">
-                {isRegister ? 'Create Account' : 'Sign In'}
+              <span className="relative flex items-center gap-2">
+                {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+                {isLoading 
+                  ? (isRegister ? 'Creating Account...' : 'Signing In...') 
+                  : (isRegister ? 'Create Account' : 'Sign In')
+                }
               </span>
             </Button>
             <div className="text-center space-y-2">

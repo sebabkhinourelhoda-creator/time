@@ -41,7 +41,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { Sidebar } from '@/components/Sidebar';
+import { DashboardSidebar } from '@/components/DashboardSidebar';
 import { NavBar } from '@/components/NavBar';
 
 // Mock data - replace with actual data from your backend
@@ -114,6 +114,7 @@ const mockVideos = [
 export default function DashboardPage() {
   const { user } = useAuth();
   const [newAvatar, setNewAvatar] = useState<File | null>(null);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -132,7 +133,7 @@ export default function DashboardPage() {
       setNewAvatar(file);
       // TODO: Implement actual avatar upload
       const imageUrl = URL.createObjectURL(file);
-      await updateProfile({ avatar: imageUrl });
+      await updateProfile({ avatar_url: imageUrl });
       toast({
         title: 'Profile updated',
         description: 'Your avatar has been updated successfully.',
@@ -144,11 +145,14 @@ export default function DashboardPage() {
   const { updateProfile, logout } = useAuth();
 
   return (
-    <div className="min-h-screen bg-background/95 flex">
-      <Sidebar />
-      <div className="flex-1 pl-64">
-        <NavBar />
-        <div className="container mx-auto py-8 px-4 space-y-8 relative">
+    <div className="min-h-screen bg-background flex">
+      <DashboardSidebar 
+        isOpen={isMobileSidebarOpen} 
+        onClose={() => setIsMobileSidebarOpen(false)} 
+      />
+      <div className="flex-1 lg:pl-64 min-h-screen bg-background">
+        <NavBar onMenuClick={() => setIsMobileSidebarOpen(true)} />
+        <div className="w-full py-4 px-4 lg:py-8 lg:px-6 space-y-6 lg:space-y-8 mt-16 min-h-screen bg-background">
         {/* Header */}
         <div className="flex justify-between items-center">
           <div className="space-y-1">
@@ -177,9 +181,11 @@ export default function DashboardPage() {
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full blur-xl" />
               <Avatar className="h-24 w-24 border-2 border-border relative">
-                <AvatarImage src={user?.avatar} />
+                <AvatarImage src={user?.avatar_url} alt={user?.full_name || user?.username} />
                 <AvatarFallback className="bg-primary/5 text-xl">
-                  {user?.name?.[0]}
+                  {user?.full_name 
+                    ? user.full_name.split(' ').map(n => n[0]).join('').toUpperCase()
+                    : user?.username?.[0].toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
               <Label
@@ -198,7 +204,7 @@ export default function DashboardPage() {
             </div>
             <div className="space-y-1">
               <h2 className="text-2xl font-semibold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                {user?.name}
+                {user?.full_name || user?.username}
               </h2>
               <p className="text-muted-foreground">{user?.email}</p>
               <p className="text-sm text-muted-foreground">Member since October 2025</p>

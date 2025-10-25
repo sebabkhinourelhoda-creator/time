@@ -13,9 +13,10 @@ const Navigation = () => {
     { name: "Home", path: "/" },
     { name: "DNA", path: "/dna-genetics" },
     { name: "Body", path: "/body-map" },
-    { name: "Research", path: "/research" },
+    { name: "Health Check", path: "/health-assessment" },
     { name: "Prevention", path: "/prevention" },
     { name: "Videos", path: "/videos" },
+    { name: "Research", path: "/research-papers" },
     { name: "About", path: "/about" },
   ];
 
@@ -53,8 +54,8 @@ const Navigation = () => {
                 </Button>
                 <img
                   className="h-8 w-8 rounded-full border-2 border-muted"
-                  src={user.avatar || "placeholder.svg"}
-                  alt={user.name || "User"}
+                  src={user.avatar_url || "/placeholder.svg"}
+                  alt={user.full_name || "User"}
                 />
               </div>
             ) : (

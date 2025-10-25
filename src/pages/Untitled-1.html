@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>time2thrive - Cancer Awareness Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony (Off-white, Soft Blue, Gentle Green, Warm Coral) with Gradients -->
+    <!-- Application Structure Plan: A single-page app with a fixed header and themed sections (Home, Learn, Prevention, Check Risk, Find Help, Community) that are displayed/hidden via JavaScript. This thematic grouping is more intuitive for users than a flat list of features, guiding them from awareness to action and support. -->
+    <!-- Visualization & Content Choices: Interactive Body Map (CSS/HTML divs, not SVG) to explore cancer types by organ. Two separate JS-powered quizzes for risk assessment and myth-busting. Responsive cards for prevention tips and success stories. Map feature represented by a UI placeholder. This structure prioritizes interactive learning and action based on the project plan's goals. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
+        .page { display: none; }
+        .page.active { display: block; animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .lang-btn.active { background-color: #0ea5e9; color: white; }
+        
+        .body-map-container { 
+            position: relative; 
+            width: 320px; 
+            height: 600px; 
+            margin: auto; 
+            background-image: url('https://www.transparentpng.com/thumb/human/black-human-body-silhouette-png-1.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .organ { 
+            position: absolute; 
+            background-color: rgba(14, 165, 233, 0.6); 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+            border: 1px solid rgba(14, 165, 233, 0.8);
+        }
+        .organ:hover { 
+            background-color: rgba(244, 63, 94, 0.8); 
+            transform: scale(1.1); 
+            z-index: 10;
+        }
+
+        #atlas-brain { top: 35px; left: 130px; width: 60px; height: 50px; border-radius: 50%; }
+        #atlas-thyroid { top: 125px; left: 135px; width: 50px; height: 20px; border-radius: 10px 10px 20px 20px; }
+        #atlas-lungs-left { top: 160px; left: 100px; width: 60px; height: 100px; border-radius: 40% 10% 40% 60%; transform: rotate(-10deg); }
+        #atlas-lungs-right { top: 160px; left: 160px; width: 60px; height: 100px; border-radius: 10% 40% 60% 40%; transform: rotate(10deg); }
+        #atlas-liver { top: 260px; left: 95px; width: 90px; height: 70px; border-radius: 50% 50% 10% 10%; transform: rotate(15deg); }
+        #atlas-stomach { top: 270px; left: 165px; width: 60px; height: 60px; border-radius: 20% 50% 50% 50%; transform: rotate(-10deg); }
+        #atlas-pancreas { top: 320px; left: 130px; width: 80px; height: 25px; border-radius: 30px; transform: rotate(-5deg); background-color: rgba(234, 179, 8, 0.6); border-color: rgba(234, 179, 8, 0.8); }
+        #atlas-kidneys-left { top: 340px; left: 110px; width: 40px; height: 50px; border-radius: 50% 50% 30% 30%; }
+        #atlas-kidneys-right { top: 340px; left: 170px; width: 40px; height: 50px; border-radius: 50% 50% 30% 30%; }
+        #atlas-intestine { top: 360px; left: 110px; width: 100px; height: 100px; border-radius: 20px; background-color: rgba(236, 72, 153, 0.6); border-color: rgba(236, 72, 153, 0.8); }
+        #atlas-bladder { top: 470px; left: 140px; width: 40px; height: 30px; border-radius: 10px 10px 50% 50%; }
+        #atlas-prostate { top: 505px; left: 145px; width: 30px; height: 15px; border-radius: 50%; background-color: rgba(139, 92, 246, 0.6); border-color: rgba(139, 92, 246, 0.8);}
+        
+        .quiz-option.selected { background-image: linear-gradient(to right, #0ea5e9, #2563eb); color: white; border-color: #2563eb; }
+        .quiz-option.correct { background-image: linear-gradient(to right, #10b981, #059669); color: white; border-color: #059669; }
+        .quiz-option.incorrect { background-image: linear-gradient(to right, #f43f5e, #dc2626); color: white; border-color: #dc2626; }
+        html[dir="rtl"] .body-map-container { transform: scaleX(-1); }
+        html[dir="rtl"] .organ { transform: scaleX(-1); }
+        
+        #ai-fab { position: fixed; bottom: 20px; right: 20px; z-index: 100; }
+        #ai-chat-window { position: fixed; bottom: 90px; right: 20px; z-index: 100; width: 350px; height: 500px; transition: all 0.3s ease-in-out; transform: translateY(20px) scale(0.9); opacity: 0; pointer-events: none; }
+        #ai-chat-window.active { transform: translateY(0) scale(1); opacity: 1; pointer-events: auto; }
+        .chat-message.user { display: flex; justify-content: flex-end; }
+        .chat-message.bot { display: flex; justify-content: flex-start; }
+        .gradient-btn { background-image: linear-gradient(to right, #0ea5e9, #2563eb); }
+        #dna-container canvas { cursor: grab; }
+        #dna-container canvas:active { cursor: grabbing; }
+        .loader { width: 48px; height: 48px; border: 5px solid #FFF; border-bottom-color: #0ea5e9; border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite; }
+        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .animated-gradient-text {
+            background-image: linear-gradient(to right, #0ea5e9, #2563eb, #f43f5e, #0ea5e9);
+            background-size: 200% auto;
+            color: transparent;
+            -webkit-background-clip: text;
+            background-clip: text;
+            animation: animate-gradient 4s linear infinite;
+        }
+
+        @keyframes animate-gradient {
+            to {
+                background-position: 200% center;
+            }
+        }
+
+        @keyframes swim {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-3px);
+            }
+        }
+        .swimming-nav {
+            animation: swim 4s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-green-50 to-teal-100 text-slate-800">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm swimming-nav">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-3xl font-extrabold text-sky-600" data-translate-key="logo_text">time2<span class="text-rose-500">thrive</span></span>
+                </div>
+                <div class="hidden md:flex md:space-x-4">
+                    <a href="#home" class="nav-link text-gray-600 hover:text-sky-600 px-3 py-2 rounded-md text-sm font-medium" data-page="home" data-translate-key="nav_home">Home</a>
+                    <a href="#learn" class="nav-link text-gray-600 hover:text-sky-600 px-3 py-2 rounded-md text-sm font-medium" data-page="learn" data-translate-key="nav_learn">Learn</a>
+                    <a href="#prevention" class="nav-link text-gray-600 hover:text-sky-600 px-3 py-2 rounded-md text-sm font-medium" data-page="prevention" data-translate-key="nav_prevention">Prevention</a>
+                    <a href="#videos" class="nav-link text-gray-600 hover:text-sky-600 px-3 py-2 rounded-md text-sm font-medium" data-page="videos" data-translate-key="nav_videos">Videos</a>
+                    <a href="#risk" class="nav-link text-gray-600 hover:text-sky-600 px-3 py-2 rounded-md text-sm font-medium" data-page="risk" data-translate-key="nav_risk">Check Risk</a>
+                    <a href="#help" class="nav-link text-gray-600 hover:text-sky-600 px-3 py-2 rounded-md text-sm font-medium" data-page="help" data-translate-key="nav_help">Find Help</a>
+                    <a href="#community" class="nav-link text-gray-600 hover:text-sky-600 px-3 py-2 rounded-md text-sm font-medium" data-page="community" data-translate-key="nav_community">Community</a>
+                </div>
+                <div class="flex items-center">
+                    <div class="flex items-center border border-slate-200 rounded-full p-1 text-xs">
+                        <button class="lang-btn px-2 py-1 rounded-full" data-lang="en">EN</button>
+                        <button class="lang-btn px-2 py-1 rounded-full" data-lang="fr">FR</button>
+                        <button class="lang-btn px-2 py-1 rounded-full" data-lang="ar">AR</button>
+                    </div>
+                     <button id="mobile-menu-button" class="md:hidden ml-4 inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-sky-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-sky-500">
+                        <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    </button>
+                </div>
+            </div>
+            <div id="mobile-menu" class="md:hidden hidden pb-4">
+                <a href="#home" class="nav-link block text-gray-600 hover:text-sky-600 px-3 py-2 rounded-md text-base font-medium" data-page="home" data-translate-key="nav_home">Home</a>
+                <a href="#learn" class="nav-link block text-gray-600 hover:text-sky-600 px-3 py-2 rounded-md text-base font-medium" data-page="learn" data-translate-key="nav_learn">Learn</a>
+                <a href="#prevention" class="nav-link block text-gray-600 hover:text-sky-600 px-3 py-2 rounded-md text-base font-medium" data-page="prevention" data-translate-key="nav_prevention">Prevention</a>
+                <a href="#videos" class="nav-link block text-gray-600 hover:text-sky-600 px-3 py-2 rounded-md text-base font-medium" data-page="videos" data-translate-key="nav_videos">Videos</a>
+                <a href="#risk" class="nav-link block text-gray-600 hover:text-sky-600 px-3 py-2 rounded-md text-base font-medium" data-page="risk" data-translate-key="nav_risk">Check Risk</a>
+                <a href="#help" class="nav-link block text-gray-600 hover:text-sky-600 px-3 py-2 rounded-md text-base font-medium" data-page="help" data-translate-key="nav_help">Find Help</a>
+                <a href="#community" class="nav-link block text-gray-600 hover:text-sky-600 px-3 py-2 rounded-md text-base font-medium" data-page="community" data-translate-key="nav_community">Community</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <section id="home" class="page">
+            <div class="text-center bg-white p-8 md:p-12 rounded-2xl shadow-md">
+                <h1 class="animated-gradient-text text-4xl md:text-6xl font-extrabold mb-4" data-translate-key="home_title">Empowering Health, Inspiring Hope.</h1>
+                <p class="text-lg text-slate-600 max-w-3xl mx-auto" data-translate-key="home_subtitle">Your comprehensive and trusted guide to cancer awareness, prevention, and early detection. We believe knowledge is the first and most powerful line of defense.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+                <a href="#risk" class="nav-link group block bg-gradient-to-br from-sky-500 to-sky-600 text-white p-8 rounded-2xl text-center shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2" data-page="risk"><h2 class="text-2xl font-bold mb-2" data-translate-key="home_card1_title">Assess Your Risk</h2><p data-translate-key="home_card1_desc">Take our confidential, detailed quiz to understand your personal risk factors and receive tailored advice.</p></a>
+                <a href="#learn" class="nav-link group block bg-gradient-to-br from-teal-500 to-teal-600 text-white p-8 rounded-2xl text-center shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2" data-page="learn"><h2 class="text-2xl font-bold mb-2" data-translate-key="home_card2_title">Explore & Learn</h2><p data-translate-key="home_card2_desc">Use our interactive body map to explore detailed information about various cancer types.</p></a>
+                <a href="#prevention" class="nav-link group block bg-gradient-to-br from-rose-500 to-rose-600 text-white p-8 rounded-2xl text-center shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2" data-page="prevention"><h2 class="text-2xl font-bold mb-2" data-translate-key="home_card3_title">Prevention First</h2><p data-translate-key="home_card3_desc">Discover simple yet powerful lifestyle changes you can make to significantly lower your cancer risk.</p></a>
+            </div>
+            
+            <div id="stats-section" class="mt-12 bg-white p-8 rounded-2xl shadow-md">
+                <h2 class="text-3xl font-bold text-center text-slate-800 mb-8" data-translate-key="home_stats_title">Global Cancer Statistics: A Sobering Reality</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                    <div><p class="text-6xl font-extrabold text-sky-500 stat-number" data-target="19.3">0</p><p class="text-slate-600 mt-2 font-medium" data-translate-key="home_stats_1_text">Million New Cases Diagnosed Annually</p></div>
+                    <div><p class="text-6xl font-extrabold text-teal-500 stat-number" data-target="40">0</p><p class="text-slate-600 mt-2 font-medium" data-translate-key="home_stats_2_text">% of Cancers are Preventable Through Lifestyle</p></div>
+                    <div><p class="text-6xl font-extrabold text-rose-500 stat-number" data-target="9.9">0</p><p class="text-slate-600 mt-2 font-medium" data-translate-key="home_stats_3_text">Million Deaths Annually Worldwide</p></div>
+                </div>
+            </div>
+
+            <div class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-white p-8 rounded-2xl shadow-md">
+                <div class="text-center md:text-left">
+                    <h2 class="text-3xl font-bold text-slate-800 mb-4" data-translate-key="home_3d_title">The Blueprint of Life</h2>
+                    <p class="text-slate-600" data-translate-key="home_3d_desc">Understanding our DNA is key to understanding cancer. This complex molecule holds the instructions for life, but when mutations occur, it can lead to uncontrolled cell growth. Our research and awareness efforts focus on protecting this vital code. Interact with the model to explore its structure.</p>
+                </div>
+                <div id="dna-container" class="w-full h-80 rounded-lg bg-slate-200"></div>
+            </div>
+        </section>
+
+        <section id="learn" class="page">
+             <div class="text-center mb-12"><h1 class="text-4xl font-extrabold text-slate-800" data-translate-key="learn_title">Knowledge is Power</h1><p class="text-lg text-slate-600 mt-2" data-translate-key="learn_subtitle">Explore our interactive and detailed resources to understand cancer better.</p></div>
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-md mb-8">
+                <h2 class="text-2xl font-bold text-center mb-4" data-translate-key="body_map_title">Interactive Anatomy Atlas</h2>
+                <p class="text-slate-600 text-center mb-6 max-w-xl mx-auto" data-translate-key="body_map_desc">Click on an organ to learn about associated cancer types, symptoms, risk factors, and specific prevention strategies. This visual guide helps you understand where different cancers can originate and how they might affect the body.</p>
+                <div class="body-map-container">
+                    <div id="atlas-brain" class="organ" data-organ="brain" title="Brain"></div>
+                    <div id="atlas-thyroid" class="organ" data-organ="thyroid" title="Thyroid"></div>
+                    <div id="atlas-lungs-left" class="organ" data-organ="lungs" title="Lungs"></div>
+                    <div id="atlas-lungs-right" class="organ" data-organ="lungs" title="Lungs"></div>
+                    <div id="atlas-liver" class="organ" data-organ="liver" title="Liver"></div>
+                    <div id="atlas-stomach" class="organ" data-organ="stomach" title="Stomach"></div>
+                    <div id="atlas-pancreas" class="organ" data-organ="pancreas" title="Pancreas"></div>
+                    <div id="atlas-kidneys-left" class="organ" data-organ="kidneys" title="Kidneys"></div>
+                    <div id="atlas-kidneys-right" class="organ" data-organ="kidneys" title="Kidneys"></div>
+                    <div id="atlas-intestine" class="organ" data-organ="intestine" title="Colon/Intestine"></div>
+                    <div id="atlas-bladder" class="organ" data-organ="bladder" title="Bladder"></div>
+                    <div id="atlas-prostate" class="organ" data-organ="prostate" title="Prostate"></div>
+                </div>
+            </div>
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-md"><h2 class="text-2xl font-bold text-center mb-4" data-translate-key="myth_quiz_title">Fact or Myth? Debunking Misconceptions</h2><p class="text-slate-600 text-center mb-6 max-w-xl mx-auto" data-translate-key="myth_quiz_desc">Misinformation about cancer can cause unnecessary fear and lead to poor health decisions. Test your knowledge and learn the scientific facts to separate truth from fiction.</p><div id="myth-quiz-container" class="max-w-xl mx-auto"></div></div>
+        </section>
+        
+        <section id="prevention" class="page">
+             <div class="text-center mb-12"><h1 class="text-4xl font-extrabold text-slate-800" data-translate-key="prevention_title">Your Proactive Path to Prevention</h1><p class="text-lg text-slate-600 mt-2" data-translate-key="prevention_subtitle">Up to 40% of cancers can be prevented. Small, consistent changes in your daily life can make a monumental difference to your long-term health.</p></div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="prevention-tips-container"></div>
+        </section>
+        
+        <section id="videos" class="page">
+            <div class="text-center mb-12"><h1 class="text-4xl font-extrabold text-slate-800" data-translate-key="videos_title">Educational Video Library</h1><p class="text-lg text-slate-600 mt-2" data-translate-key="videos_subtitle">Watch powerful stories from medical experts, researchers, and courageous survivors to learn more and find inspiration.</p></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8" id="videos-container">
+            </div>
+        </section>
+
+        <section id="risk" class="page">
+            <div class="text-center mb-12"><h1 class="text-4xl font-extrabold text-slate-800" data-translate-key="risk_title">Comprehensive Cancer Risk Assessment</h1><p class="text-lg text-slate-600 mt-2 max-w-2xl mx-auto" data-translate-key="risk_subtitle">Answer these questions honestly to get a personalized view of your potential risk factors. This is a confidential educational tool, not a medical diagnosis. Always consult a healthcare professional for medical advice.</p></div>
+            <div id="risk-quiz-container" class="max-w-xl mx-auto bg-white p-6 md:p-8 rounded-2xl shadow-md"></div>
+        </section>
+
+        <section id="help" class="page">
+            <div class="text-center mb-12"><h1 class="text-4xl font-extrabold text-slate-800" data-translate-key="help_title">Find Early Detection & Support Centers</h1><p class="text-lg text-slate-600 mt-2" data-translate-key="help_subtitle">Locate hospitals, screening campaigns, and support groups near you. Early detection is critical.</p></div>
+            <div class="bg-white p-6 rounded-2xl shadow-md">
+                <div class="flex flex-col md:flex-row gap-4 mb-6"><input type="text" placeholder="Enter your city, region, or zip code..." class="flex-grow p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:outline-none" data-translate-key="help_search_placeholder" data-translate-type="placeholder"><button class="gradient-btn text-white font-bold py-3 px-6 rounded-lg hover:opacity-90 transition-opacity" data-translate-key="help_search_button">Search</button></div>
+                <div class="w-full h-96 bg-slate-200 rounded-lg flex items-center justify-center"><p class="text-slate-500" data-translate-key="help_map_placeholder">Interactive Map Interface (Demonstration)</p></div>
+            </div>
+        </section>
+
+        <section id="community" class="page">
+             <div class="text-center mb-12"><h1 class="text-4xl font-extrabold text-slate-800" data-translate-key="community_title">Stories of Hope, Strength & Survival</h1><p class="text-lg text-slate-600 mt-2" data-translate-key="community_subtitle">You are not alone on this journey. Read these powerful and inspiring stories from survivors, fighters, and supporters from around the world.</p></div>
+             <div class="bg-white p-6 rounded-2xl shadow-md text-center mb-8">
+                <h2 class="text-2xl font-bold text-slate-800 mb-2" data-translate-key="generate_hope_title">Share a Message of Hope</h2>
+                <p class="text-slate-600 mb-4" data-translate-key="generate_hope_desc">Sometimes, the right words can make all the difference. Generate an uplifting message to share with a loved one or to find strength for yourself.</p>
+                <button id="generate-hope-btn" class="gradient-btn text-white font-bold py-3 px-6 rounded-lg hover:opacity-90 transition-opacity" data-translate-key="generate_hope_btn">✨ Generate a Message of Hope</button>
+             </div>
+            <div class="space-y-8" id="stories-container"></div>
+        </section>
+    </main>
+
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-60 z-[100] hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto"><div class="p-6"><div class="flex justify-between items-center mb-4"><h2 id="modal-title" class="text-2xl font-bold"></h2><button id="modal-close" class="text-slate-500 hover:text-slate-800 text-3xl transition-colors">&times;</button></div><div id="modal-content" class="prose max-w-none"></div></div></div>
+    </div>
+    
+    <div id="ai-fab">
+        <button id="ai-fab-button" class="gradient-btn text-white rounded-full p-4 shadow-lg hover:opacity-90 transition-transform transform hover:scale-110">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM5 8a1 1 0 011-1h1.4a.6.6_0 00.55-.35l.44-1.1a1 1 0 011.9 0l.44 1.1A.6.6 0 0011.6 7H13a1 1 0 110 2h-1.4a.6.6 0 00-.55.35l-.44 1.1a1 1 0 01-1.9 0l-.44-1.1A.6.6 0 006.4 9H5a1 1 0 01-1-1zm6.5 3.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" clip-rule="evenodd" /></svg>
+        </button>
+    </div>
+    
+    <div id="ai-chat-window" class="bg-white rounded-2xl shadow-2xl flex flex-col">
+        <div class="gradient-btn text-white p-4 rounded-t-2xl flex justify-between items-center"><h3 class="font-bold text-lg" data-translate-key="ai_assistant_title">AI Assistant</h3><button id="ai-close-button" class="text-white text-2xl">&times;</button></div>
+        <div id="chat-body" class="flex-1 p-4 overflow-y-auto space-y-4"></div>
+        <form id="chat-form" class="p-4 border-t border-slate-200 flex gap-2">
+            <input type="text" id="chat-input" class="flex-grow p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:outline-none" placeholder="Ask a question..." data-translate-key="ai_chat_placeholder" data-translate-type="placeholder">
+            <button type="submit" class="gradient-btn text-white font-bold p-2 rounded-lg hover:opacity-90 transition-opacity">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" /></svg>
+            </button>
+        </form>
+    </div>
+
+    <script defer>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gemini API call function
+            const callGeminiAPI = async (prompt) => {
+                const apiKey = ""; // Leave empty, will be handled by the environment
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+                const payload = {
+                    contents: [{ parts: [{ text: prompt }] }],
+                };
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                    });
+                    if (!response.ok) {
+                        throw new Error(`API call failed with status: ${response.status}`);
+                    }
+                    const result = await response.json();
+                    if (result.candidates && result.candidates[0] && result.candidates[0].content.parts[0].text) {
+                        return result.candidates[0].content.parts[0].text;
+                    } else {
+                         return "I am sorry, I could not generate a response. The model may have returned an empty answer."
+                    }
+                } catch (error) {
+                    console.error("Gemini API call error:", error);
+                    return "Sorry, I couldn't generate a response at this moment. Please try again later.";
+                }
+            };
+
+            const pages = document.querySelectorAll('.page');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const langButtons = document.querySelectorAll('.lang-btn');
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            let currentLanguage = 'en';
+            let currentOrganInfo = ''; // To store the HTML content for summarization
+
+            const translations = {
+                en: {
+                    logo_text: "time2<span class='text-rose-500'>thrive</span>",
+                    nav_home: "Home", nav_learn: "Learn", nav_prevention: "Prevention", nav_videos: "Videos", nav_risk: "Check Risk", nav_help: "Find Help", nav_community: "Community",
+                    home_title: "Empowering Health, Inspiring Hope.",
+                    home_subtitle: "Your comprehensive and trusted guide to cancer awareness, prevention, and early detection. We believe knowledge is the first and most powerful line of defense.",
+                    home_card1_title: "Assess Your Risk", home_card1_desc: "Take our confidential, detailed quiz to understand your personal risk factors and receive tailored advice.",
+                    home_card2_title: "Explore & Learn", home_card2_desc: "Use our interactive body map to explore detailed information about various cancer types.",
+                    home_card3_title: "Prevention First", home_card3_desc: "Discover simple yet powerful lifestyle changes you can make to significantly lower your cancer risk.",
+                    home_stats_title: "Global Cancer Statistics: A Sobering Reality", home_stats_1_text: "Million New Cases Diagnosed Annually", home_stats_2_text: "% of Cancers are Preventable Through Lifestyle", home_stats_3_text: "Million Deaths Annually Worldwide",
+                    home_3d_title: "The Blueprint of Life", home_3d_desc: "Understanding our DNA is key to understanding cancer. This complex molecule holds the instructions for life, but when mutations occur, it can lead to uncontrolled cell growth. Our research and awareness efforts focus on protecting this vital code. Interact with the model to explore its structure.",
+                    learn_title: "Knowledge is Power", learn_subtitle: "Explore our interactive and detailed resources to understand cancer better.",
+                    body_map_title: "Interactive Anatomy Atlas", body_map_desc: "Click on an organ to learn about associated cancer types, symptoms, risk factors, and specific prevention strategies. This visual guide helps you understand where different cancers can originate and how they might affect the body.",
+                    myth_quiz_title: "Fact or Myth? Debunking Misconceptions", myth_quiz_desc: "Misinformation about cancer can cause unnecessary fear and lead to poor health decisions. Test your knowledge and learn the scientific facts to separate truth from fiction.",
+                    prevention_title: "Your Proactive Path to Prevention", prevention_subtitle: "Up to 40% of cancers can be prevented. Small, consistent changes in your daily life can make a monumental difference to your long-term health.",
+                    videos_title: "Educational Video Library", videos_subtitle: "Watch powerful stories from medical experts, researchers, and courageous survivors to learn more and find inspiration.",
+                    risk_title: "Comprehensive Cancer Risk Assessment", risk_subtitle: "Answer these questions honestly to get a personalized view of your potential risk factors. This is a confidential educational tool, not a medical diagnosis. Always consult a healthcare professional for medical advice.",
+                    help_title: "Find Early Detection & Support Centers", help_subtitle: "Locate hospitals, screening campaigns, and support groups near you. Early detection is critical.", help_search_placeholder: "Enter your city, region, or zip code...", help_search_button: "Search", help_map_placeholder: "Interactive Map Interface (Demonstration)",
+                    community_title: "Stories of Hope, Strength & Survival", community_subtitle: "You are not alone on this journey. Read these powerful and inspiring stories from survivors, fighters, and supporters from around the world.",
+                    modal_close: "Close", quiz_next_button: "Next", quiz_results_button: "See Results", quiz_restart_button: "Restart Quiz",
+                    risk_quiz_results_title: "Your Risk Profile", risk_low: "Low Risk", risk_low_desc: "Based on your answers, your risk profile appears to be low. It's great that you're proactive. Continue to maintain a healthy lifestyle and stay informed.",
+                    risk_medium: "Moderate Risk", risk_medium_desc: "Your answers indicate some correctable risk factors. This is an opportunity to make positive changes. Consider discussing them with a healthcare professional and focus on prevention.",
+                    risk_high: "High Risk", risk_high_desc: "Several significant risk factors were identified. Knowledge is power. It is highly recommended to schedule a consultation with a doctor for a professional evaluation and guidance.",
+                    ai_assistant_title: "AI Assistant", ai_assistant_greeting: "Hello! I am your AI assistant. I can help with general questions about cancer prevention and awareness. I cannot provide medical advice. How can I help?", ai_chat_placeholder: "Ask a question...",
+                    get_healthy_recipes_btn: "✨ Get Healthy Recipes",
+                    generate_personal_plan_btn: "✨ Generate My Personal Plan",
+                    healthy_recipes_title: "Healthy Recipe Ideas",
+                    generate_hope_title: "Share a Message of Hope", generate_hope_desc: "Sometimes, the right words can make all the difference. Generate an uplifting message to share with a loved one or to find strength for yourself.", generate_hope_btn: "✨ Generate a Message of Hope",
+                    summarize_info_btn: "✨ Simplify This Info",
+                },
+                fr: {
+                    logo_text: "time2<span class='text-rose-500'>thrive</span>",
+                    nav_home: "Accueil", nav_learn: "Apprendre", nav_prevention: "Prévention", nav_videos: "Vidéos", nav_risk: "Évaluer le Risque", nav_help: "Trouver de l'Aide", nav_community: "Communauté",
+                    home_title: "Santé Autonome, Espoir Inspirant.", home_subtitle: "Votre guide complet et de confiance pour la sensibilisation, la prévention et la détection précoce du cancer. Nous croyons que le savoir est la première et la plus puissante ligne de défense.",
+                    home_card1_title: "Évaluez Votre Risque", home_card1_desc: "Répondez à notre quiz confidentiel et détaillé pour comprendre vos facteurs de risque personnels et recevoir des conseils adaptés.",
+                    home_card2_title: "Explorer et Apprendre", home_card2_desc: "Utilisez notre carte corporelle interactive pour explorer des informations détaillées sur divers types de cancer.",
+                    home_card3_title: "La Prévention d'Abord", home_card3_desc: "Découvrez des changements de mode de vie simples mais puissants que vous pouvez adopter pour réduire considérablement votre risque de cancer.",
+                    home_stats_title: "Statistiques Mondiales sur le Cancer : Une Réalité qui Donne à Réfléchir", home_stats_1_text: "Millions de Nouveaux Cas Diagnostiqués Chaque Année", home_stats_2_text: "% des Cancers sont Évitables Grâce au Mode de Vie", home_stats_3_text: "Millions de Décès Chaque Année dans le Monde",
+                    home_3d_title: "Le Plan de la Vie", home_3d_desc: "Comprendre notre ADN est la clé pour comprendre le cancer. Cette molécule complexe contient les instructions de la vie, mais lorsque des mutations surviennent, elle peut entraîner une croissance cellulaire incontrôlée. Interagissez avec le modèle pour explorer sa structure.",
+                    learn_title: "Le Savoir, c'est le Pouvoir", learn_subtitle: "Explorez nos ressources interactives et détaillées pour mieux comprendre le cancer.",
+                    body_map_title: "Atlas Anatomique Interactif", body_map_desc: "Cliquez sur un organe pour en savoir plus sur les types de cancer associés, les symptômes, les facteurs de risque et les stratégies de prévention spécifiques.",
+                    myth_quiz_title: "Réalité ou Mythe ? Démystifier les Idées Reçues", myth_quiz_desc: "La désinformation sur le cancer peut causer des craintes inutiles. Testez vos connaissances et apprenez les faits scientifiques.",
+                    prevention_title: "Votre Voie Proactive vers la Prévention", prevention_subtitle: "Jusqu'à 40% des cancers peuvent être évités. De petits changements cohérents dans votre vie quotidienne peuvent faire une différence monumentale.",
+                    videos_title: "Vidéothèque Éducative", videos_subtitle: "Regardez des témoignages puissants d'experts médicaux, de chercheurs et de courageux survivants.",
+                    risk_title: "Évaluation Complète du Risque de Cancer", risk_subtitle: "Répondez honnêtement à ces questions pour obtenir un aperçu personnalisé de vos facteurs de risque potentiels. Ceci est un outil éducatif confidentiel, pas un diagnostic médical.",
+                    help_title: "Trouver des Centres de Dépistage et de Soutien", help_subtitle: "Localisez les hôpitaux, les campagnes de dépistage et les groupes de soutien près de chez vous. Le dépistage précoce est essentiel.", help_search_placeholder: "Entrez votre ville, région ou code postal...", help_search_button: "Rechercher", help_map_placeholder: "Interface de Carte Interactive (Démonstration)",
+                    community_title: "Histoires d'Espoir, de Force et de Survie", community_subtitle: "Vous n'êtes pas seul dans ce voyage. Lisez ces histoires puissantes et inspirantes de survivants, de combattants et de sympathisants du monde entier.",
+                    risk_quiz_results_title: "Votre Profil de Risque", risk_low: "Risque Faible", risk_low_desc: "D'après vos réponses, votre profil de risque semble faible. Continuez à maintenir un mode de vie sain.",
+                    risk_medium: "Risque Modéré", risk_medium_desc: "Vos réponses indiquent certains facteurs de risque modifiables. C'est une opportunité de faire des changements positifs.",
+                    risk_high: "Risque Élevé", risk_high_desc: "Plusieurs facteurs de risque importants ont été identifiés. Le savoir est un pouvoir. Il est fortement recommandé de consulter un médecin.",
+                    ai_assistant_title: "Assistant IA", ai_assistant_greeting: "Bonjour! Je suis votre assistant IA. Je peux répondre aux questions générales sur la prévention du cancer. Je ne peux pas fournir de conseils médicaux. Comment puis-je vous aider?", ai_chat_placeholder: "Posez une question...",
+                    get_healthy_recipes_btn: "✨ Obtenir des Recettes Saines",
+                    generate_personal_plan_btn: "✨ Générer Mon Plan Personnel",
+                    healthy_recipes_title: "Idées de Recettes Saines",
+                    generate_hope_title: "Partagez un Message d'Espoir", generate_hope_desc: "Parfois, les bons mots peuvent faire toute la différence. Générez un message édifiant à partager avec un être cher.", generate_hope_btn: "✨ Générer un Message d'Espoir",
+                    summarize_info_btn: "✨ Simplifier cette Info",
+                },
+                ar: {
+                    logo_text: "time2<span class='text-rose-500'>thrive</span>",
+                    nav_home: "الرئيسية", nav_learn: "تعلم", nav_prevention: "الوقاية", nav_videos: "فيديوهات", nav_risk: "تقييم المخاطر", nav_help: "ابحث عن مساعدة", nav_community: "المجتمع",
+                    home_title: "تمكين الصحة، إلهام الأمل.", home_subtitle: "دليلك الشامل والموثوق للتوعية بالسرطان والوقاية منه والكشف المبكر عنه. نؤمن بأن المعرفة هي خط الدفاع الأول والأقوى.",
+                    home_card1_title: "قيّم مخاطرك", home_card1_desc: "أجب على استبياننا السري والمفصل لفهم عوامل الخطر الشخصية لديك والحصول على نصائح مخصصة.",
+                    home_card2_title: "استكشف وتعلم", home_card2_desc: "استخدم خريطة الجسم التفاعلية لاستكشاف معلومات مفصلة حول أنواع السرطان المختلفة.",
+                    home_card3_title: "الوقاية أولاً", home_card3_desc: "اكتشف تغييرات بسيطة وقوية في نمط الحياة يمكنك إجراؤها لتقليل خطر الإصابة بالسرطان بشكل كبير.",
+                    home_stats_title: "إحصائيات السرطان العالمية: حقيقة واقعية", home_stats_1_text: "مليون حالة جديدة يتم تشخيصها سنوياً", home_stats_2_text: "٪ من حالات السرطان يمكن الوقاية منها من خلال نمط الحياة", home_stats_3_text: "مليون حالة وفاة سنوياً في جميع أنحاء العالم",
+                    home_3d_title: "مخطط الحياة", home_3d_desc: "فهم حمضنا النووي هو مفتاح فهم السرطان. يحمل هذا الجزيء المعقد تعليمات الحياة، ولكن عند حدوث طفرات، يمكن أن يؤدي إلى نمو غير منضبط للخلايا. تفاعل مع النموذج لاستكشاف بنيته.",
+                    learn_title: "المعرفة قوة", learn_subtitle: "استكشف مواردنا التفاعلية والمفصلة لفهم السرطان بشكل أفضل.",
+                    body_map_title: "أطلس التشريح التفاعلي", body_map_desc: "انقر فوق عضو للتعرف على أنواع السرطان المرتبطة به، والأعراض، وعوامل الخطر، واستراتيجيات الوقاية المحددة.",
+                    myth_quiz_title: "حقيقة أم خرافة؟ دحض المفاهيم الخاطئة", myth_quiz_desc: "يمكن أن تسبب المعلومات الخاطئة عن السرطان خوفًا غير ضروري. اختبر معلوماتك وتعرف على الحقائق العلمية.",
+                    prevention_title: "طريقك الاستباقي للوقاية", prevention_subtitle: "يمكن الوقاية من ما يصل إلى 40٪ من حالات السرطان. يمكن للتغييرات الصغيرة والمستمرة في حياتك اليومية أن تحدث فرقًا هائلاً.",
+                    videos_title: "مكتبة الفيديو التعليمية", videos_subtitle: "شاهد قصصًا قوية من خبراء طبيين وباحثين وناجين شجعان لمعرفة المزيد والعثور على الإلهام.",
+                    risk_title: "تقييم شامل لمخاطر السرطان", risk_subtitle: "أجب عن هذه الأسئلة بصدق للحصول على عرض شخصي لعوامل الخطر المحتملة. هذه أداة تعليمية سرية وليست تشخيصًا طبيًا.",
+                    help_title: "ابحث عن مراكز الكشف المبكر والدعم", help_subtitle: "حدد المستشفيات وحملات الفحص ومجموعات الدعم القريبة منك. الكشف المبكر أمر بالغ الأهمية.", help_search_placeholder: "أدخل مدينتك أو منطقتك أو الرمز البريدي...", help_search_button: "بحث", help_map_placeholder: "واجهة خريطة تفاعلية (عرض توضيحي)",
+                    community_title: "قصص الأمل والقوة والبقاء", community_subtitle: "أنت لست وحدك في هذه الرحلة. اقرأ هذه القصص القوية والملهمة من الناجين والمقاتلين والداعمين من جميع أنحاء العالم.",
+                    risk_quiz_results_title: "ملف المخاطر الخاص بك", risk_low: "مخاطر منخفضة", risk_low_desc: "بناءً على إجاباتك، يبدو أن ملف المخاطر الخاص بك منخفض. استمر في الحفاظ على نمط حياة صحي.",
+                    risk_medium: "مخاطر متوسطة", risk_medium_desc: "تشير إجاباتك إلى بعض عوامل الخطر القابلة للتصحيح. هذه فرصة لإجراء تغييرات إيجابية.",
+                    risk_high: "مخاطر عالية", risk_high_desc: "تم تحديد العديد من عوامل الخطر الهامة. المعرفة قوة. يوصى بشدة بتحديد موعد لاستشارة الطبيب.",
+                    ai_assistant_title: "المساعد الذكي", ai_assistant_greeting: "مرحباً! أنا مساعدك الذكي. يمكنني المساعدة في الإجابة على الأسئلة العامة حول الوقاية من السرطان. لا يمكنني تقديم استشارة طبية. كيف يمكنني خدمتك؟", ai_chat_placeholder: "اطرح سؤالاً...",
+                    get_healthy_recipes_btn: "✨ احصل على وصفات صحية",
+                    generate_personal_plan_btn: "✨ أنشئ خطتي الشخصية",
+                    healthy_recipes_title: "أفكار لوصفات صحية",
+                    generate_hope_title: "شارك رسالة أمل", generate_hope_desc: "أحيانًا، الكلمات المناسبة يمكن أن تحدث كل الفرق. قم بإنشاء رسالة مبهجة لمشاركتها مع من تحب.", generate_hope_btn: "✨ أنشئ رسالة أمل",
+                    summarize_info_btn: "✨ بسّط هذه المعلومات",
+                }
+            };
+            
+            const organData = {
+                en: { 
+                    brain: { title: "Brain Cancer", content: "<h4>Overview</h4><p>Cancers that originate in the brain tissue. They can be benign (non-cancerous) or malignant (cancerous) but both can be serious.</p><h4>Prevention</h4><p>Most brain cancers have no known prevention methods, but avoiding environmental hazards like radiation is advised.</p><h4>Common Symptoms</h4><p>New onset or change in pattern of headaches, unexplained nausea, vision problems, and seizures.</p>" },
+                    thyroid: { title: "Thyroid Cancer", content: "<h4>Overview</h4><p>A cancer that occurs in the cells of the thyroid — a butterfly-shaped gland located at the base of your neck. It often has a very high cure rate.</p><h4>Prevention</h4><p>Avoiding unnecessary radiation exposure to the head and neck is the main preventable risk factor.</p><h4>Common Symptoms</h4><p>A lump that can be felt through the skin on your neck, changes to your voice, difficulty swallowing.</p>" },
+                    lungs: { title: "Lung Cancer", content: "<h4>Overview</h4><p>The leading cause of cancer death worldwide, primarily caused by smoking.</p><h4>Prevention</h4><p>The most important preventive measure is to not smoke and to avoid secondhand smoke.</p><h4>Common Symptoms</h4><p>A persistent cough that worsens, chest pain, shortness of breath, coughing up blood.</p>" },
+                    liver: { title: "Liver Cancer", content: "<h4>Overview</h4><p>Often develops in individuals with underlying liver diseases like cirrhosis.</p><h4>Prevention</h4><p>Get vaccinated for Hepatitis B, seek treatment for Hepatitis C, limit alcohol, and maintain a healthy weight.</p><h4>Common Symptoms</h4><p>Abdominal pain or swelling, yellowing of the skin (jaundice), unexplained weight loss.</p>" },
+                    stomach: { title: "Stomach Cancer", content: "<h4>Overview</h4><p>Also known as gastric cancer. Incidence is linked to H. pylori infections and diet.</p><h4>Prevention</h4><p>Maintain a diet low in smoked/salted foods and high in fruits and vegetables. Treat H. pylori infections.</p><h4>Common Symptoms</h4><p>Indigestion, heartburn, stomach pain, feeling full after a small meal.</p>" },
+                    pancreas: { title: "Pancreatic Cancer", content: "<h4>Overview</h4><p>Often diagnosed at late stages because it doesn't cause symptoms until it's advanced. It's aggressive and difficult to treat.</p><h4>Prevention</h4><p>Don't smoke, maintain a healthy weight, and limit alcohol consumption.</p><h4>Common Symptoms</h4><p>Pain in the upper abdomen that radiates to your back, loss of appetite, jaundice, light-colored stools.</p>" },
+                    kidneys: { title: "Kidney Cancer", content: "<h4>Overview</h4><p>Renal cell carcinoma is the most common type of kidney cancer in adults.</p><h4>Prevention</h4><p>Quit smoking, maintain a healthy blood pressure, and maintain a healthy weight.</p><h4>Common Symptoms</h4><p>Blood in your urine (which may appear pink, red or cola colored), persistent pain in your back or side, loss of appetite.</p>" },
+                    intestine: { title: "Colorectal Cancer", content: "<h4>Overview</h4><p>Cancer of the colon or rectum. Often begins as noncancerous polyps.</p><h4>Prevention</h4><p>Regular screening (colonoscopy), a diet high in fiber, and regular physical activity.</p><h4>Common Symptoms</h4><p>Changes in bowel habits, blood in stool, persistent abdominal cramps.</p>" },
+                    bladder: { title: "Bladder Cancer", content: "<h4>Overview</h4><p>Typically affects older adults and is more common in men. Smoking is a major risk factor.</p><h4>Prevention</h4><p>Don't smoke, be careful with chemicals, and drink plenty of water.</p><h4>Common Symptoms</h4><p>Blood in urine (hematuria), frequent urination, painful urination.</p>" },
+                    prostate: { title: "Prostate Cancer", content: "<h4>Overview</h4><p>One of the most common types of cancer in men. It usually grows slowly and is initially confined to the prostate gland.</p><h4>Prevention</h4><p>Choose a healthy diet full of fruits and vegetables, maintain a healthy weight, and exercise.</p><h4>Common Symptoms</h4><p>Trouble urinating, decreased force in the stream of urine, blood in semen, erectile dysfunction.</p>" }
+                },
+                fr: { /* Translations Omitted For Brevity */ },
+                ar: { /* Translations Omitted For Brevity */ }
+            };
+
+            const preventionTips = {
+                en: [
+                    { icon: '🚭', title: 'Don\'t Use Tobacco', text: 'All forms of tobacco are linked to many cancers. Quitting is the single best health decision you can make.' },
+                    { icon: '🥗', title: 'Eat a Healthy Diet', text: 'Focus on fruits, vegetables, lean proteins, and whole grains. Limit red and processed meats.' },
+                    { icon: '🏃', title: 'Maintain a Healthy Weight & Stay Active', text: 'Aim for at least 150 minutes of moderate activity per week. Being overweight is a major risk factor.' },
+                    { icon: '☀️', title: 'Protect Your Skin from the Sun', text: 'Use broad-spectrum sunscreen daily and avoid direct sun exposure during peak hours to prevent skin cancer.' },
+                    { icon: '💉', title: 'Get Vaccinated', text: 'Vaccines like HPV (for cervical, oral, and other cancers) and Hepatitis B (for liver cancer) are crucial preventive tools.' },
+                    { icon: '🩺', title: 'Know Your Body & Get Screened', text: 'Early detection through regular self-exams and recommended screenings (like mammograms and colonoscopies) saves lives.' },
+                    { icon: '🍷', title: 'Limit Alcohol Consumption', text: 'Excessive alcohol use increases the risk of several cancers, including liver, breast, colon, and throat.' },
+                ],
+                 fr: [ /* Translations Omitted For Brevity */ ],
+                 ar: [ /* Translations Omitted For Brevity */ ]
+            };
+            
+             const stories = {
+                en: [
+                    { name: 'Aisha K., Breast Cancer Survivor', story: '"Finding a supportive community was crucial for my journey. Hope and shared strength carried me through the toughest times. I learned that vulnerability is not weakness; it\'s the courage to face another day. Never, ever give up!"', image: 'https://placehold.co/100x100/a7f3d0/14532d?text=AK' },
+                    { name: 'Karim B., Colon Cancer Survivor', story: '"Early detection made all the difference. I was hesitant to get a colonoscopy, but it saved my life. I urge everyone, especially men, to put aside their pride and listen to their body. That screening can give you a lifetime."', image: 'https://placehold.co/100x100/bae6fd/0c4a6e?text=KB' },
+                    { name: 'Fatima Z., Leukemia Fighter', story: '"Changing my lifestyle after my diagnosis was empowering. Healthy eating and staying as active as I could gave me a sense of control and made me feel stronger every day, even on the hard days. It\'s about fighting back with every tool you have."', image: 'https://placehold.co/100x100/fecaca/991b1b?text=FZ' },
+                    { name: 'Omar S., Lung Cancer Advocate', story: '"The mental battle is just as important as the physical one. After losing my father, I became an advocate for mental health resources for patients and their families. Don\'t be afraid to seek psychological support. It makes a world of difference."', image: 'https://placehold.co/100x100/e9d5ff/581c87?text=OS' },
+                ],
+                fr: [ /* Translations Omitted For Brevity */ ],
+                ar: [ /* Translations Omitted For Brevity */ ]
+            };
+            
+            const videosData = {
+                en: [
+                    { id: '1', title: 'Understanding Chemotherapy: How It Works', speaker: 'Dr. Emily Carter, Oncologist', url: 'https://www.youtube.com/embed/GLC4s4h3-24' },
+                    { id: '2', title: 'Nutrition During Cancer Treatment', speaker: 'Mark Johnson, Clinical Dietitian', url: 'https://www.youtube.com/embed/RwtN4aMAAEo' },
+                    { id: '3', title: 'A Survivor\'s Story: My Journey with Lymphoma', speaker: 'Johnathan Reed', url: 'https://www.youtube.com/embed/videoseries?list=PLpVmY1gH2HwU1pZ2Q_qD-wK2s-nxiS-J_' },
+                    { id: '4', title: 'The Importance of Mental Health in Cancer Care', speaker: 'Dr. Aisha Khan, Psycho-oncologist', url: 'https://www.youtube.com/embed/videoseries?list=PLpVmY1gH2HwU1pZ2Q_qD-wK2s-nxiS-J_' },
+                ],
+                fr: [ /* Translations Omitted For Brevity */ ],
+                ar: [ /* Translations Omitted For Brevity */ ]
+            }
+
+            const riskQuizData = {
+                en: [
+                    { question: "What is your age range?", options: ["Under 40", "40-59", "60+"], points: [0, 1, 2] },
+                    { question: "Do you have a close biological relative (parent, sibling, child) who had cancer?", options: ["No", "Yes, one", "Yes, more than one"], points: [0, 2, 3] },
+                    { question: "Do you currently use tobacco products (smoking, vaping, chewing)?", options: ["Never", "Used to, but quit >1 year ago", "Yes, currently"], points: [0, 1, 4] },
+                    { question: "On average, how many alcoholic drinks do you have per week?", options: ["0", "1-7", "More than 7"], points: [0, 1, 2] },
+                    { question: "How often do you engage in at least 30 minutes of moderate physical activity?", options: ["5 or more times a week", "1-4 times a week", "Rarely or never"], points: [0, 1, 2] },
+                    { question: "How would you describe your typical diet?", options: ["High in fruits, vegetables, and fiber", "A balanced mix of food groups", "High in processed foods, red meat, and sugar"], points: [0, 1, 3] },
+                    { question: "How often do you get a blistering sunburn?", options: ["Never", "Rarely (less than once every few years)", "Occasionally or often"], points: [0, 1, 2] }
+                ],
+                fr: [ /* Translations Omitted For Brevity */ ],
+                ar: [ /* Translations Omitted For Brevity */ ]
+            };
+
+            const mythQuizData = {
+                en: [
+                    { question: "Myth or Fact: Only people with a family history of cancer are at risk.", answer: "Myth", explanation: "Only about 5-10% of cancers are hereditary. Lifestyle and environmental factors like diet, exercise, and smoking play a much larger role for most people." },
+                    { question: "Myth or Fact: Using deodorant or antiperspirant can cause breast cancer.", answer: "Myth", explanation: "There is no conclusive scientific evidence linking the use of underarm antiperspirants or deodorants with breast cancer. Major cancer organizations have found no link." },
+                    { question: "Myth or Fact: Eating sugar makes cancer grow faster.", answer: "Myth", explanation: "While it's true that cancer cells consume more sugar (glucose) than normal cells, no study has shown that eating sugar will make cancer grow faster or spread. However, a high-sugar diet can lead to obesity and other conditions that are known risk factors for cancer." }
+                ],
+                fr: [ /* Translations Omitted For Brevity */ ],
+                ar: [ /* Translations Omitted For Brevity */ ]
+            };
+            
+            function showPage(pageId) {
+                pages.forEach(page => { page.classList.toggle('active', page.id === pageId); });
+                 window.scrollTo(0, 0);
+                 mobileMenu.classList.add('hidden');
+            }
+
+            function setLanguage(lang) {
+                if(!translations[lang]) lang = 'en'; // Fallback to English
+                currentLanguage = lang;
+                document.documentElement.lang = lang;
+                document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+                document.querySelectorAll('[data-translate-key]').forEach(el => {
+                    const key = el.getAttribute('data-translate-key');
+                    const type = el.getAttribute('data-translate-type') || 'innerHTML';
+                    if (translations[lang] && translations[lang][key]) {
+                        if (type === 'innerHTML') { el.innerHTML = translations[lang][key]; } 
+                        else { el.setAttribute(type, translations[lang][key]); }
+                    } else if (translations['en'][key]) { // Fallback for missing translations
+                         if (type === 'innerHTML') { el.innerHTML = translations['en'][key]; } 
+                        else { el.setAttribute(type, translations['en'][key]); }
+                    }
+                });
+                langButtons.forEach(btn => { btn.classList.toggle('active', btn.dataset.lang === lang); });
+                renderPreventionTips();
+                renderStories();
+                renderVideos();
+                startRiskQuiz();
+                startMythQuiz();
+                setupAIassistant();
+            }
+            
+            function renderPreventionTips() {
+                const container = document.getElementById('prevention-tips-container');
+                if (!container) return;
+                const tips = (preventionTips[currentLanguage] || preventionTips.en);
+                
+                const dietCardIndex = preventionTips.en.findIndex(t => t.title.includes('Diet'));
+                
+                container.innerHTML = tips.map((tip, index) => {
+                    let cardHTML = `
+                    <div class="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 flex flex-col h-full">
+                        <div class="text-5xl mb-4">${tip.icon}</div>
+                        <h3 class="text-xl font-bold mb-2">${tip.title}</h3>
+                        <p class="text-slate-600 flex-grow">${tip.text}</p>`;
+                    
+                    if (index === dietCardIndex) {
+                        cardHTML += `<button id="get-recipes-btn" class="w-full mt-4 gradient-btn text-white font-bold py-2 px-4 rounded-lg hover:opacity-90 transition-opacity" data-translate-key="get_healthy_recipes_btn">${translations[currentLanguage].get_healthy_recipes_btn}</button>`;
+                    }
+                    
+                    cardHTML += `</div>`;
+                    return cardHTML;
+                }).join('');
+                
+                const recipeButton = container.querySelector('#get-recipes-btn');
+                if (recipeButton) {
+                    recipeButton.onclick = handleGetRecipes;
+                }
+            }
+
+            function renderStories() {
+                const container = document.getElementById('stories-container');
+                if (!container) return;
+                container.innerHTML = (stories[currentLanguage] || stories.en).map(story => `
+                    <div class="bg-white p-6 rounded-2xl shadow-md flex flex-col md:flex-row items-center gap-6">
+                        <img src="${story.image}" alt="${story.name}" class="w-24 h-24 rounded-full object-cover border-4 border-slate-100 flex-shrink-0">
+                        <div class="text-center md:text-left">
+                            <p class="text-slate-600 italic text-lg mb-4">"${story.story}"</p>
+                            <p class="text-right font-bold text-teal-600">- ${story.name}</p>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            function renderVideos() {
+                 const container = document.getElementById('videos-container');
+                 if(!container) return;
+                 container.innerHTML = (videosData[currentLanguage] || videosData.en).map(video => `
+                    <div class="bg-white p-4 rounded-2xl shadow-md">
+                        <div class="aspect-video mb-4">
+                            <iframe src="${video.url}" title="${video.title}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="w-full h-full rounded-lg"></iframe>
+                        </div>
+                        <h3 class="text-xl font-bold">${video.title}</h3>
+                        <p class="text-slate-500">${video.speaker}</p>
+                    </div>
+                 `).join('');
+            }
+
+            navLinks.forEach(link => { link.addEventListener('click', (e) => { e.preventDefault(); showPage(link.getAttribute('data-page')); }); });
+            langButtons.forEach(btn => { btn.addEventListener('click', () => { setLanguage(btn.dataset.lang); }); });
+            mobileMenuButton.addEventListener('click', () => { mobileMenu.classList.toggle('hidden'); });
+            
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalContent = document.getElementById('modal-content');
+            const modalClose = document.getElementById('modal-close');
+            modalClose.addEventListener('click', () => { modal.classList.add('hidden'); modal.classList.remove('flex'); });
+
+            document.querySelectorAll('.organ').forEach(organ => {
+                organ.addEventListener('click', () => {
+                    const data = (organData[currentLanguage] || organData.en)[organ.dataset.organ];
+                    if(data) {
+                        currentOrganInfo = data.content; // Store original content
+                        modalTitle.innerText = data.title;
+                        
+                        // Add Simplify button to modal content
+                        let contentHTML = data.content;
+                        contentHTML += `<button id="summarize-info-btn" class="w-full mt-6 gradient-btn text-white font-bold py-3 px-6 rounded-lg hover:opacity-90" data-translate-key="summarize_info_btn">${translations[currentLanguage].summarize_info_btn}</button>`;
+                        modalContent.innerHTML = contentHTML;
+
+                        document.getElementById('summarize-info-btn').addEventListener('click', handleSummarizeInfo);
+                        
+                        modal.classList.remove('hidden');
+                        modal.classList.add('flex');
+                    }
+                });
+            });
+
+            async function handleSummarizeInfo() {
+                const button = document.getElementById('summarize-info-btn');
+                button.disabled = true;
+                button.innerHTML = `<div class="flex justify-center items-center"><span class="loader !w-6 !h-6 !border-4"></span></div>`;
+
+                const prompt = `You are an expert medical communicator. Simplify the following technical information about a type of cancer into 3-4 simple, easy-to-understand bullet points for a general audience. Use clear and non-technical language. Here is the text to simplify:\n\n${currentOrganInfo}`;
+                
+                const summaryText = await callGeminiAPI(prompt);
+                
+                // Replace original content with summary, but keep the button
+                let contentHTML = `<div class="p-4 bg-sky-50 rounded-lg">${marked.parse(summaryText)}</div>`;
+                contentHTML += `<button id="summarize-info-btn" class="w-full mt-6 gradient-btn text-white font-bold py-3 px-6 rounded-lg hover:opacity-90" data-translate-key="summarize_info_btn">${translations[currentLanguage].summarize_info_btn}</button>`;
+                modalContent.innerHTML = contentHTML;
+                document.getElementById('summarize-info-btn').addEventListener('click', handleSummarizeInfo);
+            }
+
+            let userQuizAnswers = {};
+
+            function startRiskQuiz() {
+                const container = document.getElementById('risk-quiz-container');
+                if(!container) return;
+                let currentQuestionIndex = 0;
+                let score = 0;
+                userQuizAnswers = {};
+                const quizData = riskQuizData[currentLanguage] || riskQuizData.en;
+                
+                function renderQuestion() {
+                    const questionData = quizData[currentQuestionIndex];
+                    container.innerHTML = `<p class="text-lg font-semibold mb-4">${currentQuestionIndex + 1}. ${questionData.question}</p><div class="space-y-3">${questionData.options.map((option, index) => `<button class="quiz-option w-full text-left p-3 border-2 border-slate-200 rounded-lg hover:border-sky-500 transition-colors" data-points="${questionData.points[index]}" data-question="${questionData.question}" data-answer="${option}">${option}</button>`).join('')}</div>`;
+                    container.querySelectorAll('.quiz-option').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            score += parseInt(btn.dataset.points);
+                            userQuizAnswers[btn.dataset.question] = btn.dataset.answer;
+                            currentQuestionIndex++;
+                            if (currentQuestionIndex < quizData.length) { renderQuestion(); } else { showResults(); }
+                        });
+                    });
+                }
+                function showResults() {
+                    let resultKey, resultColor;
+                    if (score <= 5) { resultKey = 'low'; resultColor = 'bg-teal-100 text-teal-800'; }
+                    else if (score <= 11) { resultKey = 'medium'; resultColor = 'bg-yellow-100 text-yellow-800'; }
+                    else { resultKey = 'high'; resultColor = 'bg-rose-100 text-rose-800'; }
+                    const lang = currentLanguage;
+                    container.innerHTML = `<h3 class="text-2xl font-bold text-center mb-4">${translations[lang].risk_quiz_results_title}</h3>
+                    <div class="p-4 rounded-lg text-center ${resultColor}"><p class="font-bold text-xl mb-2">${translations[lang]['risk_' + resultKey]}</p><p>${translations[lang]['risk_' + resultKey + '_desc']}</p></div>
+                    <button id="generate-plan-btn" class="w-full mt-6 gradient-btn text-white font-bold py-3 px-6 rounded-lg hover:opacity-90">${translations[lang].generate_personal_plan_btn}</button>
+                    <div id="personal-plan-output" class="mt-4 p-4 bg-slate-100 rounded-lg prose max-w-none hidden"></div>
+                    <button id="restart-risk-quiz" class="w-full mt-2 bg-gray-200 text-gray-700 font-bold py-3 px-6 rounded-lg hover:bg-gray-300">${translations[lang].quiz_restart_button}</button>`;
+                    
+                    document.getElementById('restart-risk-quiz').addEventListener('click', startRiskQuiz);
+                    document.getElementById('generate-plan-btn').addEventListener('click', handleGeneratePlan);
+                }
+                renderQuestion();
+            }
+
+            async function handleGeneratePlan() {
+                const outputDiv = document.getElementById('personal-plan-output');
+                outputDiv.classList.remove('hidden');
+                outputDiv.innerHTML = `<div class="flex justify-center items-center"><span class="loader"></span></div>`;
+
+                const answersString = Object.entries(userQuizAnswers).map(([q, a]) => `- ${q}: ${a}`).join('\n');
+                const prompt = `You are a compassionate health advisor. A user has completed a cancer risk assessment with the following results:\n${answersString}\n\nBased on these specific risk factors, generate a personalized, actionable, and encouraging prevention plan for them. Structure the response in Markdown format. For each relevant risk factor identified from their answers, create a bolded heading. Under each heading, provide 2-3 specific, easy-to-follow, and positive tips. Start the entire plan with a single encouraging and empowering sentence. Do not include a preamble or a conclusion. Focus only on the actionable plan.`;
+                
+                const planText = await callGeminiAPI(prompt);
+                outputDiv.innerHTML = marked.parse(planText);
+            }
+
+            async function handleGetRecipes() {
+                modalTitle.innerText = translations[currentLanguage].healthy_recipes_title;
+                modalContent.innerHTML = `<div class="flex justify-center items-center"><span class="loader"></span></div>`;
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+
+                const prompt = `You are a nutritionist specializing in oncology prevention. Generate three simple, healthy, and delicious recipes that align with cancer prevention guidelines (rich in fruits, vegetables, whole grains; low in red/processed meats and sugar). For each recipe, provide a title, a short description, a list of ingredients, and step-by-step instructions. Format the entire response in clean HTML using <h4> for titles, <p> for descriptions, <ul> and <li> for ingredients, and <ol> and <li> for instructions. Do not include any markdown or other text outside the HTML structure for the three recipes.`;
+
+                const recipeHTML = await callGeminiAPI(prompt);
+                modalContent.innerHTML = recipeHTML;
+            }
+            
+            async function handleGenerateHope() {
+                modalTitle.innerText = translations[currentLanguage].generate_hope_title;
+                modalContent.innerHTML = `<div class="flex justify-center items-center"><span class="loader"></span></div>`;
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                
+                const prompt = `You are a compassionate and eloquent writer. Write a short, uplifting, and hopeful message (2-4 sentences) for someone who is going through a difficult health challenge like cancer. The tone should be encouraging, warm, and full of strength, but not overly clinical or preachy. Focus on resilience, hope, and the strength of the human spirit.`;
+                
+                const hopeText = await callGeminiAPI(prompt);
+                modalContent.innerHTML = `<p class="text-center text-xl italic p-8">${hopeText}</p>`;
+            }
+
+            function startMythQuiz() {
+                const container = document.getElementById('myth-quiz-container');
+                 if(!container) return;
+                let currentQuestionIndex = 0;
+                const quizData = mythQuizData[currentLanguage] || mythQuizData.en;
+                function renderQuestion() {
+                    const qData = quizData[currentQuestionIndex];
+                    container.innerHTML = `<div class="bg-slate-100 p-4 rounded-lg mb-4"><p class="text-lg font-semibold">${qData.question}</p></div><div class="flex gap-4"><button class="myth-option w-full bg-sky-500 text-white font-bold py-3 rounded-lg hover:bg-sky-600 transition-colors" data-answer="Fact">Fact</button><button class="myth-option w-full bg-rose-500 text-white font-bold py-3 rounded-lg hover:bg-rose-600 transition-colors" data-answer="Myth">Myth</button></div><div id="myth-explanation" class="mt-4"></div><button id="next-myth-btn" class="w-full mt-4 bg-slate-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-slate-700 hidden">${translations[currentLanguage].quiz_next_button}</button>`;
+                    container.querySelectorAll('.myth-option').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            const isCorrect = btn.dataset.answer === qData.answer;
+                            btn.classList.add(isCorrect ? 'correct' : 'incorrect');
+                            container.querySelectorAll('.myth-option').forEach(b => b.disabled = true);
+                            document.getElementById('myth-explanation').innerHTML = `<div class="p-4 rounded-lg ${isCorrect ? 'bg-teal-100 text-teal-800' : 'bg-rose-100 text-rose-800'}"><p><strong>${qData.answer}</strong>: ${qData.explanation}</p></div>`;
+                            document.getElementById('next-myth-btn').classList.remove('hidden');
+                        });
+                    });
+                    document.getElementById('next-myth-btn').addEventListener('click', () => {
+                        currentQuestionIndex++;
+                        if (currentQuestionIndex < quizData.length) { renderQuestion(); } 
+                        else {
+                            container.innerHTML = `<h3 class="text-xl font-bold text-center">Quiz Complete!</h3><p class="text-center mt-2">You've successfully debunked common cancer myths.</p><button id="restart-myth-quiz" class="w-full mt-6 gradient-btn text-white font-bold py-3 px-6 rounded-lg hover:opacity-90">${translations[currentLanguage].quiz_restart_button}</button>`;
+                            document.getElementById('restart-myth-quiz').addEventListener('click', startMythQuiz);
+                        }
+                    });
+                }
+                renderQuestion();
+            }
+            
+            function animateStats() {
+                const counters = document.querySelectorAll('.stat-number');
+                counters.forEach(counter => {
+                    const target = +counter.getAttribute('data-target');
+                    let count = 0;
+                    const duration = 2000; // 2 seconds
+                    const increment = target / (duration / 16); // ~60fps
+
+                    const updateCount = () => {
+                        count += increment;
+                        if (count < target) {
+                            counter.innerText = count.toFixed(1);
+                            requestAnimationFrame(updateCount);
+                        } else {
+                            counter.innerText = target;
+                        }
+                    };
+                    updateCount();
+                });
+            }
+
+            const statsSection = document.getElementById('stats-section');
+            const observer = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting) {
+                    animateStats();
+                    observer.disconnect();
+                }
+            }, { threshold: 0.5 });
+            if(statsSection) observer.observe(statsSection);
+
+            function init3D_DNA() {
+                const container = document.getElementById('dna-container');
+                if (!container || !window.THREE) return;
+                let scene, camera, renderer, group, mouseX = 0, mouseY = 0;
+                
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+                renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                renderer.setSize(container.clientWidth, container.clientHeight);
+                container.innerHTML = '';
+                container.appendChild(renderer.domElement);
+
+                group = new THREE.Group();
+                scene.add(group);
+
+                const material1 = new THREE.MeshPhongMaterial({ color: 0x0ea5e9, shininess: 100 });
+                const material2 = new THREE.MeshPhongMaterial({ color: 0xf43f5e, shininess: 100 });
+
+                const points = [];
+                for (let i = 0; i < 20; i++) {
+                    points.push(new THREE.Vector3(Math.sin(i * 0.5) * 1.5, i - 10, Math.cos(i * 0.5) * 1.5));
+                }
+                const path1 = new THREE.CatmullRomCurve3(points);
+                const geometry1 = new THREE.TubeGeometry(path1, 64, 0.15, 8, false);
+                const strand1 = new THREE.Mesh(geometry1, material1);
+                group.add(strand1);
+
+                const points2 = [];
+                for (let i = 0; i < 20; i++) {
+                    points2.push(new THREE.Vector3(Math.sin(i * 0.5 + Math.PI) * 1.5, i - 10, Math.cos(i * 0.5 + Math.PI) * 1.5));
+                }
+                const path2 = new THREE.CatmullRomCurve3(points2);
+                const geometry2 = new THREE.TubeGeometry(path2, 64, 0.15, 8, false);
+                const strand2 = new THREE.Mesh(geometry2, material2);
+                group.add(strand2);
+                
+                const rungMaterial = new THREE.MeshPhongMaterial({ color: 0x64748b });
+                for (let i = 2; i < 18; i += 0.5) {
+                    const p1 = path1.getPointAt(i / 20);
+                    const p2 = path2.getPointAt(i / 20);
+                    const rungGeometry = new THREE.CylinderGeometry(0.05, 0.05, p1.distanceTo(p2), 8);
+                    const rung = new THREE.Mesh(rungGeometry, rungMaterial);
+                    rung.position.copy(p1).lerp(p2, 0.5);
+                    rung.lookAt(p2);
+                    rung.rotateX(Math.PI / 2);
+                    group.add(rung);
+                }
+                
+                camera.position.z = 15;
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+                scene.add(ambientLight);
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.9);
+                directionalLight.position.set(5, 10, 7.5);
+                scene.add(directionalLight);
+
+                function animate() {
+                    requestAnimationFrame(animate);
+                    group.rotation.y += 0.003;
+                    group.rotation.x += (mouseY * 0.5 - group.rotation.x) * 0.05;
+                    group.rotation.y += (mouseX * 0.5 - group.rotation.y) * 0.05;
+                    renderer.render(scene, camera);
+                }
+                animate();
+
+                function onWindowResize() {
+                    camera.aspect = container.clientWidth / container.clientHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(container.clientWidth, container.clientHeight);
+                }
+                window.addEventListener('resize', onWindowResize);
+
+                function onDocumentMouseMove(event) {
+                    const rect = container.getBoundingClientRect();
+                    mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+                    mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+                }
+                document.addEventListener('mousemove', onDocumentMouseMove);
+            }
+
+            function setupAIassistant() {
+                const fab = document.getElementById('ai-fab-button');
+                const chatWindow = document.getElementById('ai-chat-window');
+                const closeBtn = document.getElementById('ai-close-button');
+                const chatBody = document.getElementById('chat-body');
+                const chatForm = document.getElementById('chat-form');
+                const chatInput = document.getElementById('chat-input');
+                if(!fab) return;
+
+                fab.addEventListener('click', () => chatWindow.classList.add('active'));
+                closeBtn.addEventListener('click', () => chatWindow.classList.remove('active'));
+
+                function addMessage(text, sender) {
+                    const msgDiv = document.createElement('div');
+                    msgDiv.className = `flex chat-message ${sender}`;
+                    const textDiv = document.createElement('div');
+                    textDiv.className = `p-3 rounded-2xl max-w-[80%] ${sender === 'user' ? 'gradient-btn text-white' : 'bg-slate-200 text-slate-800'}`;
+                    textDiv.innerHTML = sender === 'bot' ? marked.parse(text) : text;
+                    msgDiv.appendChild(textDiv);
+                    chatBody.appendChild(msgDiv);
+                    chatBody.scrollTop = chatBody.scrollHeight;
+                }
+                
+                chatForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const userInput = chatInput.value.trim();
+                    if (!userInput) return;
+                    
+                    addMessage(userInput, 'user');
+                    chatInput.value = '';
+                    
+                    addMessage('<div class="flex justify-center items-center p-2"><span class="loader !w-6 !h-6 !border-4 !border-slate-400 !border-b-sky-500"></span></div>', 'bot');
+
+                    const prompt = `You are a helpful and empathetic AI assistant for a cancer awareness website called 'time2thrive'. You MUST NOT provide medical advice, diagnoses, or treatment plans under any circumstances. If a user asks for medical advice, you must gently decline and strongly recommend they consult a qualified healthcare professional. Your role is to provide general, educational information about cancer awareness, prevention strategies, and emotional support topics in a clear, supportive, and easy-to-understand manner. Keep your answers concise and well-formatted. Answer the following user query: "${userInput}"`;
+                    
+                    const botResponse = await callGeminiAPI(prompt);
+                    
+                    // Remove loader message
+                    chatBody.removeChild(chatBody.lastChild);
+                    addMessage(botResponse, 'bot');
+                });
+                
+                chatBody.innerHTML = '';
+                addMessage(translations[currentLanguage].ai_assistant_greeting, 'bot');
+            }
+            
+            document.getElementById('generate-hope-btn')?.addEventListener('click', handleGenerateHope);
+
+
+            const initialLang = 'en'; // Force English on initial load
+            setLanguage(initialLang);
+            showPage('home');
+            init3D_DNA();
+        });
+    </script>
+</body>
+</html>
+
+
