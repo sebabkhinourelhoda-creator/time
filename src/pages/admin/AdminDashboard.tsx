@@ -16,10 +16,10 @@ import {
   AlertTriangle,
   Home
 } from 'lucide-react';
-import AdminRoute from '../components/AdminRoute';
+import AdminRoute from '../../components/AdminRoute';
 import { NavBar } from '@/components/NavBar';
 import { useToast } from '@/hooks/use-toast';
-import { AdminSidebar } from '../components/admin/AdminSidebar';
+import { AdminSidebar } from '../../components/admin/AdminSidebar';
 import { supabase } from '@/lib/supabaseClient';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 
