@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { fetchDocuments, Document } from '@/lib/documents';
-import { fetchVideos, fetchUserVideos, Video } from '@/lib/videos';
+import { fetchUserVideos, Video } from '@/lib/videos';
 import {
   FileTextIcon,
   DownloadIcon,

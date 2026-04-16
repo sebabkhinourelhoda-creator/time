@@ -27,12 +27,12 @@ import DashboardStudies from "./pages/DashboardStudies";
 import DashboardCollaborations from "./pages/DashboardCollaborations";
 import DashboardAIAnalysis from "./pages/DashboardAIAnalysis";
 import DashboardSettings from "./pages/DashboardSettings";
-import AdminDashboard from "./pages/AdminDashboard";
-import AdminUsersPage from "./pages/AdminUsersPage";
-import AdminVideosPage from "./pages/AdminVideosPage";
-import AdminCommentsPage from "./pages/AdminCommentsPage";
-import AdminDocumentsPage from "./pages/AdminDocumentsPage";
-import AdminCategoriesPage from "./pages/AdminCategoriesPage";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsersPage from "./pages/admin/AdminUsersPage";
+import AdminVideosPage from "./pages/admin/AdminVideosPage";
+import AdminCommentsPage from "./pages/admin/AdminCommentsPage";
+import AdminDocumentsPage from "./pages/admin/AdminDocumentsPage";
+import AdminCategoriesPage from "./pages/admin/AdminCategoriesPage";
 import HealthAssessment from "./pages/HealthAssessment";
 
 const queryClient = new QueryClient();
